@@ -5,15 +5,15 @@ public class CameraRotate : MonoBehaviour
 {
     [SerializeField] private float _rotationSpeed = 10f;
 
-    private float _accumulationX = 0f; // 좌우 회전 각도
-    private float _accumulationY = 0f; // 상하 회전 각도
+    private float _accumulationX; // 좌우 회전 각도
+    private float _accumulationY; // 상하 회전 각도
 
     private void Update()
     {
         // 1. 마우스 입력을 받는다.
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
-        // Debug.Log($"mouseX: {mouseX}, mouseY: {mouseY}");
+        var mouseX = Input.GetAxis("Mouse X");
+        var mouseY = Input.GetAxis("Mouse Y");
+        GameLogger.Log($"mouseX: {mouseX}, mouseY: {mouseY}");
 
         // 2. 마우스 입력 만큼 회전값을 누적한다.
         _accumulationX += mouseX * _rotationSpeed;
