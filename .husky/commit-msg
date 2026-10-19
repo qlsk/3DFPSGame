@@ -1,0 +1,138 @@
+#!/bin/sh
+
+COMMIT_MSG_FILE="$1"
+
+if [ ! -f "$COMMIT_MSG_FILE" ]; then
+    echo "커밋 메시지 파일을 찾을 수 없습니다: $COMMIT_MSG_FILE"
+    exit 1
+fi
+
+# Validate a normalized copy without rewriting the user's message.
+CLEANUP=$(git config --get commit.cleanup || :)
+if [ -z "$CLEANUP" ] || [ "$CLEANUP" = default ]; then
+    if [ "${GIT_EDITOR:-}" = : ]; then
+        CLEANUP=whitespace
+    else
+        CLEANUP=strip
+    fi
+fi
+
+MESSAGE=$(sed 's/\r$//' "$COMMIT_MSG_FILE")
+case "$CLEANUP" in
+    strip)
+        MESSAGE=$(printf '%s\n' "$MESSAGE" | git stripspace --strip-comments) || exit 1
+        ;;
+    whitespace)
+        MESSAGE=$(printf '%s\n' "$MESSAGE" | git stripspace) || exit 1
+        ;;
+    scissors)
+        if [ "${GIT_EDITOR:-}" != : ]; then
+            COMMENT_PREFIX=$(git config --get core.commentString || git config --get core.commentChar || printf '#')
+            [ "$COMMENT_PREFIX" != auto ] || COMMENT_PREFIX='#'
+            MESSAGE=$(printf '%s\n' "$MESSAGE" | awk -v prefix="$COMMENT_PREFIX" '
+                $0 == prefix " ------------------------ >8 ------------------------" { exit }
+                { print }
+            ')
+        fi
+        MESSAGE=$(printf '%s\n' "$MESSAGE" | git stripspace) || exit 1
+        ;;
+    verbatim)
+        ;;
+    *)
+        echo "지원하지 않는 commit.cleanup 설정입니다: $CLEANUP"
+        exit 1
+        ;;
+esac
+
+HEADER=$(printf '%s\n' "$MESSAGE" | sed -n '1p')
+SEPARATOR=$(printf '%s\n' "$MESSAGE" | sed -n '2p')
+
+BODY=$(
+    printf '%s\n' "$MESSAGE" | sed -n '3,$p' |
+    sed '/^[[:space:]]*$/d'
+)
+
+# Accept Git's default merge message only while an actual merge is in progress.
+if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    case "$HEADER" in
+        'Merge '?*) exit 0 ;;
+    esac
+fi
+
+# Revert can commit without REVERT_HEAD. Require the standard message and a real commit.
+if printf '%s\n' "$HEADER" | grep -Eq '^Revert ".+"$'; then
+    REVERTED_SHA=$(printf '%s\n' "$BODY" |
+        sed -nE 's/^This reverts commit ([0-9a-f]{40}|[0-9a-f]{64})[.,]$/\1/p' |
+        sed -n '1p')
+    if [ -z "$SEPARATOR" ] && [ -n "$REVERTED_SHA" ] &&
+        git cat-file -e "${REVERTED_SHA}^{commit}" 2>/dev/null; then
+        exit 0
+    fi
+fi
+
+# Conventional Commits
+# <type>[optional scope][!]: <description>
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|gameplay|asset|level|balance|ui|audio|vfx|anim|content)(\([a-zA-Z0-9._/-]+\))?!?: .*[^[:space:]].*$'
+
+ERROR=0
+
+if ! printf '%s\n' "$HEADER" | grep -Eq "$PATTERN"; then
+    echo ""
+    echo "잘못된 커밋 메시지 제목 형식입니다."
+    ERROR=1
+fi
+
+if [ -n "$SEPARATOR" ]; then
+    echo ""
+    echo "제목과 세부 메시지 사이에는 빈 줄이 필요합니다."
+    ERROR=1
+fi
+
+if [ -z "$BODY" ]; then
+    echo ""
+    echo "세부 메시지를 최소 한 줄 이상 작성해야 합니다."
+    ERROR=1
+fi
+
+if [ "$ERROR" -eq 0 ]; then
+    exit 0
+fi
+
+echo ""
+echo "커밋 메시지 형식:"
+echo ""
+echo "  <type>[optional scope][!]: <description>"
+echo ""
+echo "  <detail>"
+echo ""
+echo "작성 예시:"
+echo ""
+echo "  feat(growth): 캐릭터 성장 기능 추가"
+echo ""
+echo "  경험치 누적과 레벨업 시 능력치 증가를 구현합니다."
+echo ""
+echo "기본 타입:"
+echo "  feat      새로운 기능"
+echo "  fix       버그 수정"
+echo "  docs      문서 변경"
+echo "  style     코드 스타일 변경"
+echo "  refactor  리팩터링"
+echo "  perf      성능 개선"
+echo "  test      테스트 추가/수정"
+echo "  build     빌드 시스템 또는 의존성 변경"
+echo "  ci        CI 설정 변경"
+echo "  chore     기타 유지보수"
+echo "  revert    이전 커밋 되돌리기"
+echo ""
+echo "게임 개발 타입:"
+echo "  gameplay  게임플레이 로직 변경"
+echo "  asset     그래픽/게임 에셋 추가 및 변경"
+echo "  level     맵, 스테이지, 레벨 디자인 변경"
+echo "  balance   게임 밸런스 및 수치 조정"
+echo "  ui        UI/UX 변경"
+echo "  audio     음악 및 효과음 변경"
+echo "  vfx       파티클, 셰이더 등 VFX 변경"
+echo "  anim      애니메이션 변경"
+echo "  content   캐릭터, 적, 스킬 등 게임 콘텐츠 변경"
+
+exit 1
