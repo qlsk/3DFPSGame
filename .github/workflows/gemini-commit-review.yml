@@ -7,6 +7,11 @@ on:
     paths:
       - 'Assets/02.Scripts/**/*.cs'
   workflow_dispatch:
+    inputs:
+      base_sha:
+        description: '비교를 시작할 커밋의 전체 SHA (선택한 브랜치의 SHA까지 리뷰)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,7 +22,7 @@ concurrency:
 
 jobs:
   review:
-    name: Review C# commit
+    name: Review C# push
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -29,32 +34,77 @@ jobs:
           persist-credentials: false
 
       - name: Create commit diff
+        id: review_scope
         shell: bash
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          INPUT_BASE_SHA: ${{ inputs.base_sha }}
           COMMIT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if git rev-parse "${COMMIT_SHA}^" > /dev/null 2>&1; then
-            git diff \
-              --no-ext-diff \
-              --unified=80 \
-              "${COMMIT_SHA}^" \
-              "${COMMIT_SHA}" \
-              -- ':(glob)Assets/02.Scripts/**/*.cs' > commit.diff
+          set -euo pipefail
+          INITIAL_PUSH=false
+          if [[ "$EVENT_NAME" == workflow_dispatch ]]; then
+            BASE_SHA="$INPUT_BASE_SHA"
+          elif [[ "$EVENT_NAME" == push ]]; then
+            BASE_SHA="$BEFORE_SHA"
+            if [[ "$BASE_SHA" =~ ^0{40}$ ]]; then
+              INITIAL_PUSH=true
+              BASE_SHA=$(git hash-object -t tree -w /dev/null)
+            fi
           else
-            git show \
-              --format= \
-              --no-ext-diff \
-              --unified=80 \
-              "${COMMIT_SHA}" \
-              -- ':(glob)Assets/02.Scripts/**/*.cs' > commit.diff
-          fi
-
-          if [[ ! -s commit.diff ]]; then
-            echo "Assets/02.Scripts에서 리뷰할 C# 변경사항이 없습니다."
+            echo "::error::지원하지 않는 실행 이벤트입니다."
             exit 1
           fi
 
+          if [[ "$INITIAL_PUSH" == false ]]; then
+            if [[ ! "$BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+              echo "::error::비교 기준에는 커밋의 전체 SHA 40자리를 지정해야 합니다."
+              exit 1
+            fi
+            if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+              # Force Push로 이전 커밋이 현재 브랜치 이력에서 사라진 경우 복원합니다.
+              AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+              echo "::add-mask::$AUTH_HEADER"
+              if ! git -c "http.extraheader=$AUTH_HEADER" fetch --no-tags origin "$BASE_SHA"; then
+                echo "::error::이전 커밋을 가져올 수 없어 전체 리뷰 범위를 확정할 수 없습니다."
+                exit 1
+              fi
+            fi
+            BASE_SHA=$(git rev-parse --verify "${BASE_SHA}^{commit}")
+          fi
+
+          {
+            printf 'Event: %s\nBase: %s\nHead: %s\n' "$EVENT_NAME" "$BASE_SHA" "$COMMIT_SHA"
+            if [[ "$INITIAL_PUSH" == true ]]; then
+              echo '최초 Push: 빈 트리와 전체 코드를 비교합니다.'
+              git log --reverse --topo-order --format='%H %s' "$COMMIT_SHA"
+            else
+              if ! git merge-base --is-ancestor "$BASE_SHA" "$COMMIT_SHA"; then
+                echo '이력 변경: 이전/이후 상태를 비교하며, 아래 목록은 새 HEAD에서 추가로 도달 가능한 커밋입니다.'
+              fi
+              git log --reverse --topo-order --format='%H %s' "${BASE_SHA}..${COMMIT_SHA}"
+            fi
+          } > commits.txt
+
+          git diff \
+            --no-ext-diff \
+            --no-textconv \
+            --unified=80 \
+            "$BASE_SHA" \
+            "$COMMIT_SHA" \
+            -- ':(glob)Assets/02.Scripts/**/*.cs' > commit.diff
+
+          if [[ ! -s commit.diff ]]; then
+            echo "Assets/02.Scripts에서 리뷰할 C# 변경사항이 없습니다."
+            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run Gemini review
+        if: steps.review_scope.outputs.has_changes == 'true'
         id: gemini_review
         uses: google-github-actions/run-gemini-cli@v0.1.22
         env:
@@ -65,10 +115,15 @@ jobs:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           gemini_model: gemini-3.1-flash-lite
           prompt: |
-            현재 저장소의 최신 커밋을 코드 리뷰하세요.
+            이번 실행의 비교 시작점부터 최종 커밋까지 전체 변경 사항을 코드 리뷰하세요.
 
-            반드시 먼저 commit.diff 파일을 읽고,
+            반드시 먼저 commits.txt에서 비교 기준 SHA, 최종 SHA와 커밋 목록을 확인하고,
+            commit.diff에서 Push 전후의 전체 변경 사항을 읽으세요.
             Assets/02.Scripts 폴더에 포함된 C# 변경사항을 검토하세요.
+            필요한 경우 목록의 각 커밋을 git show로 확인하여 의도와 상호작용을 검토하세요.
+            중간 커밋의 문제가 최종 상태에서 해결됐다면 현재 문제로 보고하지 마세요.
+            이력이 변경된 경우 이전/이후 상태 차이와 커밋 목록의 의미를 구분하세요.
+            리뷰 결과에 비교 기준 SHA와 최종 SHA, 확인한 범위와 한계를 명시하세요.
 
             저장소의 GEMINI.md와 GEMINI.md에서 가져온
             코드 리뷰 기준을 반드시 적용하세요.
@@ -86,6 +141,7 @@ jobs:
         if: always()
         shell: bash
         env:
+          HAS_CHANGES: ${{ steps.review_scope.outputs.has_changes }}
           REVIEW_BODY: ${{ steps.gemini_review.outputs.summary }}
           REVIEW_ERROR: ${{ steps.gemini_review.outputs.error }}
         run: |
@@ -95,6 +151,8 @@ jobs:
 
             if [[ -n "${REVIEW_BODY}" ]]; then
               printf '%s\n' "${REVIEW_BODY}"
+            elif [[ "$HAS_CHANGES" == false ]]; then
+              echo "대상 C# 변경사항이 없어 리뷰를 생략했습니다."
             else
               echo "Gemini 리뷰 결과가 생성되지 않았습니다."
             fi

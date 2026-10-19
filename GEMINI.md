@@ -4,7 +4,7 @@
 
 코드 리뷰를 시작하기 전에 다음 문서를 읽고 해당 규칙을 반드시 적용한다.
 
-@.Docs/CodeReviewGuide.md
+@./Docs/CodeReviewGuide.md
 
 문서를 읽을 수 없다면 규칙을 임의로 추정하지 말고 해당 사실을 알린다.
 
