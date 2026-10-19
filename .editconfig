@@ -1,66 +1,155 @@
+
 root = true
 
-# 게임 코드에만 적용한다. Unity가 생성하는 스크립트/외부 코드는 대상이 아니다.
+# Unity 게임 코드에만 적용한다.
+# Unity 생성 코드 및 외부 에셋 코드는 대상에서 제외한다.
+# 이 파일은 프로젝트 루트에 배치한다.
 [Assets/02.Scripts/**.cs]
+
+#### 파일 포맷 ####
+
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
 
 #### 들여쓰기 / 중괄호 ####
 
-indent_style = space
-indent_size = 4
+# 중괄호는 다음 줄에 배치한다 (Allman 스타일).
 csharp_new_line_before_open_brace = all
 
-# case 블록 중괄호 안 내용은 한 단계 더 들여쓴다 (중괄호는 case 레이블과 같은 열).
-csharp_indent_case_contents_when_block = true
+# switch-case의 중괄호는 case 레이블과 같은 열에 배치한다.
+# 중괄호 내부 내용은 한 단계 들여쓴다.
+csharp_indent_case_contents_when_block = false
 
-# 조기 리턴(단일 행)은 중괄호 없이 허용, 여러 줄일 때만 중괄호 강제
+# 조기 리턴 등 단일 행 제어문은 중괄호 생략 허용.
+# 여러 줄인 경우 중괄호를 요구한다.
 csharp_prefer_braces = when_multiline:warning
 
-#### 이름 규칙 ####
+#### 이름 스타일 정의 ####
 
-# 규칙 순서는 무관하다. required_modifiers가 있는 쪽이 더 구체적이라
-# private const / private static readonly 예외가 private 필드 규칙보다 자동으로 우선한다.
-
+# PascalCase
 dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+# camelCase
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+# _camelCase
 dotnet_naming_style.underscore_camel_case.required_prefix = _
 dotnet_naming_style.underscore_camel_case.capitalization = camel_case
 
+# IPascalCase (인터페이스)
+dotnet_naming_style.interface_pascal.required_prefix = I
+dotnet_naming_style.interface_pascal.capitalization = pascal_case
+
+#### private 필드 ####
+
 # private 필드 → _camelCase
+# 예: _health, _moveSpeed, _isDead
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
 dotnet_naming_rule.private_fields_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
 dotnet_naming_rule.private_fields_underscore.severity = warning
 
+#### private const ####
+
 # private const → PascalCase
+# 예: MaxHealth, DefaultSpeed
 dotnet_naming_symbols.private_constants.applicable_kinds = field
 dotnet_naming_symbols.private_constants.applicable_accessibilities = private
 dotnet_naming_symbols.private_constants.required_modifiers = const
+
 dotnet_naming_rule.private_constants_pascal.symbols = private_constants
 dotnet_naming_rule.private_constants_pascal.style = pascal_case
 dotnet_naming_rule.private_constants_pascal.severity = warning
 
+#### private static readonly ####
+
 # private static readonly → PascalCase
+# 예: DefaultPosition, CachedSettings
 dotnet_naming_symbols.private_static_readonly.applicable_kinds = field
 dotnet_naming_symbols.private_static_readonly.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_readonly.required_modifiers = static,readonly
+dotnet_naming_symbols.private_static_readonly.required_modifiers = static, readonly
+
 dotnet_naming_rule.private_static_readonly_pascal.symbols = private_static_readonly
 dotnet_naming_rule.private_static_readonly_pascal.style = pascal_case
 dotnet_naming_rule.private_static_readonly_pascal.severity = warning
 
-# 타입명(class/struct/interface/enum) → PascalCase (_ 금지)
-# pascal_case 스타일은 단어 구분자를 허용하지 않으므로 Player_Move 같은 이름은 위반으로 잡힌다.
-dotnet_naming_symbols.types.applicable_kinds = class,struct,interface,enum
+#### 타입 이름 ####
+
+# class / struct / enum / delegate → PascalCase
+# 예: PlayerController, EnemyState, DamageInfo
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
 dotnet_naming_symbols.types.applicable_accessibilities = *
+
 dotnet_naming_rule.types_pascal.symbols = types
 dotnet_naming_rule.types_pascal.style = pascal_case
 dotnet_naming_rule.types_pascal.severity = warning
 
-# 지역변수 → camelCase
-dotnet_naming_style.camel_case.capitalization = camel_case
+#### 인터페이스 ####
+
+# interface → I + PascalCase
+# 예: IDamageable, IMovable, IInteractable
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_rule.interfaces_pascal.symbols = interfaces
+dotnet_naming_rule.interfaces_pascal.style = interface_pascal
+dotnet_naming_rule.interfaces_pascal.severity = warning
+
+#### 메서드 / 프로퍼티 / 이벤트 ####
+
+# method / property / event / local function → PascalCase
+# 예: TakeDamage(), CurrentHealth, OnDeath
+dotnet_naming_symbols.members.applicable_kinds = method, property, event, local_function
+dotnet_naming_symbols.members.applicable_accessibilities = *
+
+dotnet_naming_rule.members_pascal.symbols = members
+dotnet_naming_rule.members_pascal.style = pascal_case
+dotnet_naming_rule.members_pascal.severity = warning
+
+#### 지역 변수 ####
+
+# 지역 변수 → camelCase
+# 예: currentHealth, targetPosition, moveDirection
 dotnet_naming_symbols.local_variables.applicable_kinds = local
+dotnet_naming_symbols.local_variables.applicable_accessibilities = *
+
 dotnet_naming_rule.local_variables_camel.symbols = local_variables
 dotnet_naming_rule.local_variables_camel.style = camel_case
 dotnet_naming_rule.local_variables_camel.severity = warning
 
-# 규칙 severity는 IDE에서만 존중되므로, 빌드/dotnet format에서 잡히도록 진단 severity도 올린다.
+#### 매개변수 ####
+
+# 매개변수 → camelCase
+# 예: damageAmount, targetPosition
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+
+dotnet_naming_rule.parameters_camel.symbols = parameters
+dotnet_naming_rule.parameters_camel.style = camel_case
+dotnet_naming_rule.parameters_camel.severity = warning
+
+#### 접근 제한자 ####
+
+# 인터페이스의 기본 public 멤버를 제외하고
+# public, private, protected 등의 접근 제한자를 명시한다.
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+
+#### 진단 심각도 ####
+
+# IDE1006: 네이밍 규칙 위반
 dotnet_diagnostic.IDE1006.severity = warning
+
+# IDE0040: 접근 제한자 누락
+dotnet_diagnostic.IDE0040.severity = warning
+
+# IDE0055: 코드 포맷 위반
+dotnet_diagnostic.IDE0055.severity = warning
+
+# IDE0005: 불필요한 using 지시문
+dotnet_diagnostic.IDE0005.severity = suggestion
