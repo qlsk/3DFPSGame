@@ -5,9 +5,8 @@ public class PlayerMove : MonoBehaviour
 {
     private const float Gravity = -20f;
     private float _yVelocity = 0f; // 위 아래 속도, 매 프레임마다 중력 가속도가 붙는다.
-    private float _stamina = 100f;
-    private float _rushSpeed = 12f;
     [SerializeField] private float _moveSpeed = 7f;
+    [SerializeField] private float _sprintSpeed = 12f;
     [SerializeField] private float _jumpPower = 10f;
     [SerializeField] private CharacterController _characterController;
 
@@ -34,7 +33,7 @@ public class PlayerMove : MonoBehaviour
         // 3. 땅에 서 있으면 떨어지는 속도를 초기화한다.
         if (_characterController.isGrounded && _yVelocity < 0f)
         {
-            _yVelocity = -2f;
+            _yVelocity = -1f;
         }
 
         // 4. 땅에 서있지 않을 때만 중력을 누적한다.
@@ -51,19 +50,12 @@ public class PlayerMove : MonoBehaviour
 
 
         // 6. 속도를 구한다.
-        Vector3 velocity = direction * _moveSpeed;
+        float currentSpeed = Input.GetButton("Sprint") ? _sprintSpeed : _moveSpeed;
+        Vector3 velocity = direction * currentSpeed;
         velocity.y = _yVelocity;
 
         // 7. 속도(방향과 속력)에 따라 이동한다.
         // transform.position += _moveSpeed * Time.deltaTime * direction;
         _characterController.Move(Time.deltaTime * velocity);
-    }
-
-    private void Rush()
-    {
-    }
-
-    private void Jump()
-    {
     }
 }
