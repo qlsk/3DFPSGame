@@ -37,7 +37,6 @@ public class PlayerMove : MonoBehaviour
         // GetAxisRaw = -1, 0, 1
         float h = Input.GetAxisRaw("Horizontal"); // -1, 0, 1
         float v = Input.GetAxisRaw("Vertical"); // -1, 0, 1
-        GameLogger.Log($"{h} {v}");
         if (h != 0 || v != 0)
         {
             _isMoving = true;
