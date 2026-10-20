@@ -5,6 +5,8 @@ public class PlayerMove : MonoBehaviour
 {
     private const float Gravity = -20f;
     private float _yVelocity = 0f; // 위 아래 속도, 매 프레임마다 중력 가속도가 붙는다.
+    private float _stamina = 100f;
+    private float _rushSpeed = 12f;
     [SerializeField] private float _moveSpeed = 7f;
     [SerializeField] private float _jumpPower = 10f;
     [SerializeField] private CharacterController _characterController;
@@ -29,25 +31,39 @@ public class PlayerMove : MonoBehaviour
         // 로컬 좌표계: 한 대상을 중심
         // 월드 좌표계: 세상을 중심
 
-        // 3. 땅에 서있지 않을 때만 중력을 누적한다.
+        // 3. 땅에 서 있으면 떨어지는 속도를 초기화한다.
+        if (_characterController.isGrounded && _yVelocity < 0f)
+        {
+            _yVelocity = -2f;
+        }
+
+        // 4. 땅에 서있지 않을 때만 중력을 누적한다.
         if (!_characterController.isGrounded)
         {
             _yVelocity += Gravity * Time.deltaTime;
         }
 
-        // 4. 만약에 점프키를 누르면 점프를 한다.
+        // 5. 만약에 점프키를 누르면 점프를 한다.
         if (Input.GetButtonDown("Jump") && _characterController.isGrounded) // 중재자 패턴
         {
             _yVelocity = _jumpPower;
         }
 
 
-        // 5. 속도를 구한다.
+        // 6. 속도를 구한다.
         Vector3 velocity = direction * _moveSpeed;
         velocity.y = _yVelocity;
 
-        // 5. 속도(방향과 속력)에 따라 이동한다.
+        // 7. 속도(방향과 속력)에 따라 이동한다.
         // transform.position += _moveSpeed * Time.deltaTime * direction;
         _characterController.Move(Time.deltaTime * velocity);
+    }
+
+    private void Rush()
+    {
+    }
+
+    private void Jump()
+    {
     }
 }
