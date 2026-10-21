@@ -15,13 +15,16 @@ public class Bomb : MonoBehaviour
 
         ParticleSystem effect = LeanPool.Spawn(_explosionEffectPrefab, transform.position, Quaternion.identity);
 
-        // 이전 재생 상태를 지우고 다시 재생
-        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if (effect != null)
+        {
+            // 이전 재생 상태를 지우고 다시 재생
+            effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-        effect.Play(true);
+            effect.Play(true);
 
-        // Bomb가 삭제되어도 Lean Pool이 반환을 처리한다.
-        LeanPool.Despawn(effect.gameObject, _bombEffectReturnDelay);
+            // Bomb가 삭제되어도 Lean Pool이 반환을 처리한다.
+            LeanPool.Despawn(effect.gameObject, _bombEffectReturnDelay);
+        }
 
         Destroy(gameObject);
     }
