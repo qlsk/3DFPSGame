@@ -20,7 +20,7 @@ public class PlayerBombFire : MonoBehaviour
         if (Input.GetButton("Fire2") && _currentThrowCount < _maxThrowCount && _currentThrowPower <= _maxThrowPower)
         {
             _currentThrowPower = Mathf.Min(_currentThrowPower + _throwPowerUpRate * Time.deltaTime, _maxThrowPower);
-            GameLogger.Log(_currentThrowPower);
+            // GameLogger.Log(_currentThrowPower);
         }
 
         // 1-2. 마우스 오른쪽 버튼 입력이 없어지면 발사
