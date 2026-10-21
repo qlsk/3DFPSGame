@@ -1,12 +1,14 @@
 using System.Collections;
 using Lean.Pool;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 마우스 왼쪽 버튼을 누르면 바라보는 방향으로 총알을 발사하고 싶다.
 public class PlayerGunFire : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _hitEffectPrefab;
     [SerializeField] private float _hitEffectReturnDelay = 1f;
+    [SerializeField] private Slider _bulletCountSlider;
 
     [Header("스텟")]
     [SerializeField] private int _maxBulletCount = 30;
@@ -23,6 +25,8 @@ public class PlayerGunFire : MonoBehaviour
     private void Start()
     {
         _bulletCount = _maxBulletCount;
+        _bulletCountSlider.maxValue = _maxBulletCount;
+        _bulletCountSlider.value = _bulletCount;
     }
 
     private void Update()
@@ -33,6 +37,8 @@ public class PlayerGunFire : MonoBehaviour
         if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
         {
             _bulletCount--;
+            UpdateBulletSlider();
+
             _fireTimer = _fireInterval;
             Shoot();
             if (_reloadCoroutine != null)
@@ -88,5 +94,11 @@ public class PlayerGunFire : MonoBehaviour
         _bulletCount = _maxBulletCount;
         _isReloading = false;
         _reloadCoroutine = null;
+        UpdateBulletSlider();
+    }
+
+    private void UpdateBulletSlider()
+    {
+        _bulletCountSlider.value = _bulletCount;
     }
 }
