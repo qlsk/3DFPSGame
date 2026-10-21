@@ -8,21 +8,49 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _hitEffectReturnDelay = 1f;
 
     [Header("스텟")]
+    [SerializeField] private int _maxBulletCount = 30;
+    [SerializeField] private float _reloadTime = 3f;
     [SerializeField] private float _range = 100f; // 사거리
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
+    private float _reloadTimer = 0;
+    private bool _isReloading = false;
     private float _fireTimer = 0;
+    private int _bulletCount = 0;
+
+    private void Start()
+    {
+        _bulletCount = _maxBulletCount;
+    }
 
     private void Update()
     {
         // 0. 발사 타이머를 지난 시간만큼 줄인다.
         _fireTimer -= Time.deltaTime;
         // 1. 마우스 왼쪽 버튼 입력 받기
-        if (Input.GetButton("Fire1") && _fireTimer <= 0)
+        if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0 && !_isReloading)
         {
+            _bulletCount--;
             _fireTimer = _fireInterval;
             Shoot();
+        }
+
+        // 2. R키 누르면 총알 재장전
+        if (Input.GetButton("Reload"))
+        {
+            _isReloading = true;
+            _reloadTimer = 0;
+        }
+
+        if (_isReloading) // 재장전 중이라면
+        {
+            _reloadTimer += Time.deltaTime;
+            if (_reloadTimer >= _reloadTime) // 재장전 시간이 지났다면
+            {
+                _isReloading = false;
+                Reloading(); // 재장전 완료
+            }
         }
     }
 
@@ -43,11 +71,19 @@ public class PlayerGunFire : MonoBehaviour
             ParticleSystem effect =
                 LeanPool.Spawn(_hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
 
-            effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (effect != null)
+            {
+                effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-            effect.Play();
+                effect.Play();
 
-            LeanPool.Despawn(effect.gameObject, _hitEffectReturnDelay);
+                LeanPool.Despawn(effect.gameObject, _hitEffectReturnDelay);
+            }
         }
+    }
+
+    private void Reloading()
+    {
+        _bulletCount = _maxBulletCount;
     }
 }
