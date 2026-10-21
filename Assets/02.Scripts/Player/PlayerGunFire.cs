@@ -37,7 +37,7 @@ public class PlayerGunFire : MonoBehaviour
         }
 
         // 2. R키 누르면 총알 재장전
-        if (Input.GetButton("Reload"))
+        if (Input.GetButton("Reload") && !_isReloading && _bulletCount < _maxBulletCount)
         {
             _isReloading = true;
             _reloadTimer = 0;
