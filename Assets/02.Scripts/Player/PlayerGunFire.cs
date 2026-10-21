@@ -1,3 +1,4 @@
+using System.Collections;
 using Lean.Pool;
 using UnityEngine;
 
@@ -14,7 +15,6 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
-    private float _reloadTimer = 0;
     private bool _isReloading = false;
     private float _fireTimer = 0;
     private int _bulletCount = 0;
@@ -40,17 +40,7 @@ public class PlayerGunFire : MonoBehaviour
         if (Input.GetButton("Reload") && !_isReloading && _bulletCount < _maxBulletCount)
         {
             _isReloading = true;
-            _reloadTimer = 0;
-        }
-
-        if (_isReloading) // 재장전 중이라면
-        {
-            _reloadTimer += Time.deltaTime;
-            if (_reloadTimer >= _reloadTime) // 재장전 시간이 지났다면
-            {
-                _isReloading = false;
-                Reloading(); // 재장전 완료
-            }
+            StartCoroutine(Reloading_Corountine());
         }
     }
 
@@ -82,8 +72,11 @@ public class PlayerGunFire : MonoBehaviour
         }
     }
 
-    private void Reloading()
+    private IEnumerator Reloading_Corountine()
     {
+        yield return new WaitForSeconds(_reloadTime);
+
         _bulletCount = _maxBulletCount;
+        _isReloading = false;
     }
 }
