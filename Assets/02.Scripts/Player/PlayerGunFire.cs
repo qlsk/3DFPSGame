@@ -18,6 +18,7 @@ public class PlayerGunFire : MonoBehaviour
     private bool _isReloading = false;
     private float _fireTimer = 0;
     private int _bulletCount = 0;
+    private Coroutine _reloadCoroutine = null;
 
     private void Start()
     {
@@ -29,18 +30,26 @@ public class PlayerGunFire : MonoBehaviour
         // 0. 발사 타이머를 지난 시간만큼 줄인다.
         _fireTimer -= Time.deltaTime;
         // 1. 마우스 왼쪽 버튼 입력 받기
-        if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0 && !_isReloading)
+        if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
         {
             _bulletCount--;
             _fireTimer = _fireInterval;
             Shoot();
+            if (_reloadCoroutine != null)
+            {
+                StopCoroutine(_reloadCoroutine);
+                // GameLogger.Log("재장전 취소");
+                _reloadCoroutine = null;
+            }
+            // 이 방식은 이 MonoBehaviour가 등록한 모든 Coroutine을 등록 취소한다
+            // StopAllCoroutines();
         }
 
         // 2. R키 누르면 총알 재장전
-        if (Input.GetButton("Reload") && !_isReloading && _bulletCount < _maxBulletCount)
+        if (Input.GetButton("Reload") && _reloadCoroutine == null && _bulletCount < _maxBulletCount)
         {
             _isReloading = true;
-            StartCoroutine(Reloading_Corountine());
+            _reloadCoroutine = StartCoroutine(Reloading_Coroutine());
         }
     }
 
@@ -72,11 +81,12 @@ public class PlayerGunFire : MonoBehaviour
         }
     }
 
-    private IEnumerator Reloading_Corountine()
+    private IEnumerator Reloading_Coroutine()
     {
         yield return new WaitForSeconds(_reloadTime);
 
         _bulletCount = _maxBulletCount;
         _isReloading = false;
+        _reloadCoroutine = null;
     }
 }
