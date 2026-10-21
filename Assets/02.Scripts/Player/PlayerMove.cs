@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 // 키보드 방향키에 따라 그 방향으로 이동
 public class PlayerMove : MonoBehaviour
@@ -23,11 +24,14 @@ public class PlayerMove : MonoBehaviour
 
     [Header("컴포넌트")]
     [SerializeField] private CharacterController _characterController;
+    [SerializeField] private Slider _playerStaminaSlider;
 
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
         _stamina = MaxStamina;
+        _playerStaminaSlider.maxValue = MaxStamina;
+        _playerStaminaSlider.value = _stamina;
     }
 
     private void Update()
@@ -75,7 +79,7 @@ public class PlayerMove : MonoBehaviour
         {
             _yVelocity = _jumpPower;
             _jumpCount++;
-            _stamina -= _jumpCost;
+            UseStamina(_jumpCost);
         }
 
 
@@ -87,13 +91,13 @@ public class PlayerMove : MonoBehaviour
         {
             if (_stamina >= _sprintCost)
             {
-                _stamina -= requiredStamina;
+                UseStamina(requiredStamina);
                 currentSpeed = _sprintSpeed;
             }
         }
         else
         {
-            _stamina = Mathf.Min(MaxStamina, _stamina + _staminaRecovery * Time.deltaTime);
+            RecoveryStamina(_staminaRecovery * Time.deltaTime);
         }
 
         Vector3 velocity = direction * currentSpeed;
@@ -102,5 +106,22 @@ public class PlayerMove : MonoBehaviour
         // 7. 속도(방향과 속력)에 따라 이동한다.
         // transform.position += _moveSpeed * Time.deltaTime * direction;
         _characterController.Move(Time.deltaTime * velocity);
+    }
+
+    private void UseStamina(float value)
+    {
+        _stamina -= value;
+        UpdateStaminaSlider(_stamina);
+    }
+
+    private void RecoveryStamina(float value)
+    {
+        _stamina = Mathf.Min(MaxStamina, _stamina + value);
+        UpdateStaminaSlider(_stamina);
+    }
+
+    public void UpdateStaminaSlider(float value)
+    {
+        _playerStaminaSlider.value = value;
     }
 }
