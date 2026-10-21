@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 172153182}
   - component: {fileID: 172153181}
   - component: {fileID: 172153180}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -910,7 +910,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 474376453}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1059,7 +1059,7 @@ GameObject:
   - component: {fileID: 506122740}
   - component: {fileID: 506122739}
   - component: {fileID: 506122738}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1171,7 +1171,7 @@ GameObject:
   - component: {fileID: 539600879}
   - component: {fileID: 539600878}
   - component: {fileID: 539600877}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1280,7 +1280,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 627285856}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1314,7 +1314,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 663921014}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: CameraPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1348,7 +1348,7 @@ GameObject:
   - component: {fileID: 716872838}
   - component: {fileID: 716872837}
   - component: {fileID: 716872836}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1610,6 +1610,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &958185402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 958185403}
+  m_Layer: 7
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &958185403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958185402}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1637235795}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &979424889
 GameObject:
   m_ObjectHideFlags: 0
@@ -1622,7 +1653,7 @@ GameObject:
   - component: {fileID: 979424893}
   - component: {fileID: 979424892}
   - component: {fileID: 979424891}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1890,7 +1921,7 @@ GameObject:
   - component: {fileID: 1118209286}
   - component: {fileID: 1118209285}
   - component: {fileID: 1118209284}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2223,7 +2254,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1207203348}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Noses
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2257,7 +2288,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1217950440}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Nose1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2294,7 +2325,7 @@ GameObject:
   - component: {fileID: 1229039387}
   - component: {fileID: 1229039386}
   - component: {fileID: 1229039385}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2512,7 +2543,8 @@ GameObject:
   - component: {fileID: 1637235797}
   - component: {fileID: 1637235799}
   - component: {fileID: 1637235798}
-  m_Layer: 0
+  - component: {fileID: 1637235800}
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2614,6 +2646,7 @@ Transform:
   m_Children:
   - {fileID: 1207203348}
   - {fileID: 663921014}
+  - {fileID: 958185403}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1637235796
@@ -2689,6 +2722,21 @@ MonoBehaviour:
   _range: 100
   _damage: 10
   _fireInterval: 0.1
+--- !u!114 &1637235800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637235791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7629f961aece9ed44a2e12af76a3f3c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBombFire
+  _firePoint: {fileID: 958185403}
+  _bombPrefab: {fileID: 8149339598399818653, guid: 371ff599ec733934384eb00f4578a3a5, type: 3}
+  _throwPower: 15
 --- !u!1 &1779945759
 GameObject:
   m_ObjectHideFlags: 0
@@ -2701,7 +2749,7 @@ GameObject:
   - component: {fileID: 1779945763}
   - component: {fileID: 1779945762}
   - component: {fileID: 1779945761}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2813,7 +2861,7 @@ GameObject:
   - component: {fileID: 1952581084}
   - component: {fileID: 1952581083}
   - component: {fileID: 1952581082}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: NoseHole1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
