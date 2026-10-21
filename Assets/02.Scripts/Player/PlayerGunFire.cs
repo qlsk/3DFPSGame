@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Lean.Pool;
 using UnityEngine;
@@ -15,10 +16,9 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
-    private bool _isReloading = false;
     private float _fireTimer = 0;
     private int _bulletCount = 0;
-    private Coroutine _reloadCoroutine = null;
+    private Awaitable _reloadAwaitable = null;
 
     private void Start()
     {
@@ -35,21 +35,20 @@ public class PlayerGunFire : MonoBehaviour
             _bulletCount--;
             _fireTimer = _fireInterval;
             Shoot();
-            if (_reloadCoroutine != null)
+            if (_reloadAwaitable != null)
             {
-                StopCoroutine(_reloadCoroutine);
+                _reloadAwaitable.Cancel();
                 // GameLogger.Log("재장전 취소");
-                _reloadCoroutine = null;
             }
             // 이 방식은 이 MonoBehaviour가 등록한 모든 Coroutine을 등록 취소한다
             // StopAllCoroutines();
         }
 
         // 2. R키 누르면 총알 재장전
-        if (Input.GetButton("Reload") && _reloadCoroutine == null && _bulletCount < _maxBulletCount)
+        if (Input.GetButtonDown("Reload") && _reloadAwaitable == null && _bulletCount < _maxBulletCount)
         {
-            _isReloading = true;
-            _reloadCoroutine = StartCoroutine(Reloading_Coroutine());
+            ReloadingAsync();
+            GameLogger.Log("재장전");
         }
     }
 
@@ -81,12 +80,23 @@ public class PlayerGunFire : MonoBehaviour
         }
     }
 
-    private IEnumerator Reloading_Coroutine()
+    private async Awaitable ReloadingAsync()
     {
-        yield return new WaitForSeconds(_reloadTime);
+        try
+        {
+            _reloadAwaitable = Awaitable.WaitForSecondsAsync(_reloadTime);
+            await _reloadAwaitable;
 
-        _bulletCount = _maxBulletCount;
-        _isReloading = false;
-        _reloadCoroutine = null;
+            _bulletCount = _maxBulletCount;
+        }
+        catch (OperationCanceledException)
+        {
+            GameLogger.Log("재장전 취소");
+        }
+
+        finally
+        {
+            _reloadAwaitable = null;
+        }
     }
 }
