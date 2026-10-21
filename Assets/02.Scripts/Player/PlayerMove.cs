@@ -31,6 +31,7 @@ public class PlayerMove : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _stamina = MaxStamina;
         _playerStaminaSlider.maxValue = MaxStamina;
+        _playerStaminaSlider.minValue = _sprintCost;
         _playerStaminaSlider.value = _stamina;
     }
 
