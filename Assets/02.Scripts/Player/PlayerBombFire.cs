@@ -19,7 +19,7 @@ public class PlayerBombFire : MonoBehaviour
         // 1. 마우스 오른쪽 버튼 입력 받는 동안 Throw Power 상승
         if (Input.GetButton("Fire2") && _currentThrowCount < _maxThrowCount && _currentThrowPower <= _maxThrowPower)
         {
-            _currentThrowPower += _throwPowerUpRate * Time.deltaTime;
+            _currentThrowPower = Mathf.Min(_currentThrowPower + _throwPowerUpRate * Time.deltaTime, _maxThrowPower);
             GameLogger.Log(_currentThrowPower);
         }
 
