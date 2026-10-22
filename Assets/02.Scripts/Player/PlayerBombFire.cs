@@ -25,6 +25,7 @@ public class PlayerBombFire : MonoBehaviour
         _throwPowerSlider.maxValue = _maxThrowPower;
         _throwPowerSlider.minValue = _minThrowPower;
         UpdateThrowPowerSlider();
+        UpdateThrowCountText();
     }
 
     private void Update()
@@ -44,6 +45,7 @@ public class PlayerBombFire : MonoBehaviour
             Shoot();
             _currentThrowPower = _minThrowPower;
             _throwPowerSlider.gameObject.SetActive(false);
+            UpdateThrowCountText();
         }
     }
 
@@ -61,5 +63,10 @@ public class PlayerBombFire : MonoBehaviour
     private void UpdateThrowPowerSlider()
     {
         _throwPowerSlider.value = _currentThrowPower;
+    }
+
+    private void UpdateThrowCountText()
+    {
+        _throwCountText.text = $"{_maxThrowCount - _currentThrowCount}/{_maxThrowCount}";
     }
 }
