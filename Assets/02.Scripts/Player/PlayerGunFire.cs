@@ -17,7 +17,6 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
-    private bool _isReloading = false;
     private float _fireTimer = 0;
     private int _bulletCount = 0;
     private Coroutine _reloadCoroutine = null;
@@ -54,7 +53,6 @@ public class PlayerGunFire : MonoBehaviour
         // 2. R키 누르면 총알 재장전
         if (Input.GetButton("Reload") && _reloadCoroutine == null && _bulletCount < _maxBulletCount)
         {
-            _isReloading = true;
             _reloadCoroutine = StartCoroutine(Reloading_Coroutine());
         }
     }
@@ -92,7 +90,6 @@ public class PlayerGunFire : MonoBehaviour
         yield return new WaitForSeconds(_reloadTime);
 
         _bulletCount = _maxBulletCount;
-        _isReloading = false;
         _reloadCoroutine = null;
         UpdateBulletSlider();
     }
