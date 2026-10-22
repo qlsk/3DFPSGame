@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public enum ZombieState
 {
     Idle, // 대기: 제자리에서 플레이어를 기다린다.
+    Patrol, // 순찰: 두 지점을 오가며 순찰한다.
     Trace, // 추적: 플레이어를 쫓아간다.
     Comeback, // 복귀: 처음 자리로 돌아간다.
     Attack, // 공격: 일정 시간마다 플레이어를 때린다.
@@ -27,13 +28,16 @@ public class Zombie : MonoBehaviour
     [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
     [SerializeField] private float _health = 30f;
+    [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
     private float _attackTimer = 0f;
     private CharacterController _controller;
     private Vector3 _startPosition;
+    private Vector3 _endPosition;
     private GameObject _player;
     private float _currentHealth;
-    private ZombieState _state = ZombieState.Idle;
+    private ZombieState _state = ZombieState.Patrol;
+    private Vector3 _targetPosition;
 
     [SerializeField] private Slider _hpSlider;
 
@@ -42,6 +46,8 @@ public class Zombie : MonoBehaviour
         _player = GameObject.FindGameObjectWithTag("Player");
         _controller = GetComponent<CharacterController>();
         _startPosition = transform.position;
+        _endPosition = _startPosition + _moveDestination;
+        _targetPosition = _endPosition;
         _currentHealth = _health;
         _hpSlider.maxValue = _health;
         _hpSlider.value = _currentHealth;
@@ -54,6 +60,9 @@ public class Zombie : MonoBehaviour
         {
             case ZombieState.Idle:
                 Idle();
+                break;
+            case ZombieState.Patrol:
+                Patrol();
                 break;
             case ZombieState.Trace:
                 Trace();
@@ -68,6 +77,32 @@ public class Zombie : MonoBehaviour
                 break;
             case ZombieState.Death:
                 break;
+        }
+    }
+
+    public void Patrol()
+    {
+        if (Vector3.Distance(transform.position, _startPosition) < 1f)
+        {
+            _targetPosition = _endPosition;
+        }
+        else if (Vector3.Distance(transform.position, _endPosition) < 1f)
+        {
+            _targetPosition = _startPosition;
+        }
+
+        Vector3 direction = _targetPosition - transform.position;
+        direction.y = 0;
+        direction.Normalize();
+
+        transform.forward = direction;
+        _controller.SimpleMove(_moveSpeed * direction);
+
+        float distance = Vector3.Distance(transform.position, _player.transform.position);
+        if (distance < _detectDistance)
+        {
+            GameLogger.Log($"{_state} -> Trace");
+            _state = ZombieState.Trace;
         }
     }
 
@@ -129,7 +164,7 @@ public class Zombie : MonoBehaviour
         if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
         {
             GameLogger.Log($"{_state} -> Comeback");
-            _state = ZombieState.Comeback;
+            _state = ZombieState.Patrol;
             return;
         }
 
