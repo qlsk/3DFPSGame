@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 // FSM(유한 상태 머신): 유한개의 상태가 있고, 상태마다 행동을 다르게 하여 AI를 구현하는 유명한 방법
 // - "상태": 객체가 가질 수 있는 어떤 조건이나 상황
@@ -31,18 +32,24 @@ public class Zombie : MonoBehaviour
     private CharacterController _controller;
     private Vector3 _startPosition;
     private GameObject _player;
-
+    private float _currentHealth;
     private ZombieState _state = ZombieState.Idle;
+
+    [SerializeField] private Slider _hpSlider;
 
     private void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
         _controller = GetComponent<CharacterController>();
         _startPosition = transform.position;
+        _currentHealth = _health;
+        _hpSlider.maxValue = _health;
+        _hpSlider.value = _currentHealth;
     }
 
     private void Update()
     {
+        _hpSlider.transform.LookAt(_player.transform);
         switch (_state)
         {
             case ZombieState.Idle:
@@ -68,9 +75,10 @@ public class Zombie : MonoBehaviour
     public void TakeDamage(float damage)
     {
         if (_state == ZombieState.Death) return;
-        _health = Mathf.Clamp(_health - damage, 0f, _health);
+        _currentHealth = Mathf.Clamp(_currentHealth - damage, 0f, _health);
         StopAllCoroutines();
-        if (_health > 0f)
+        _hpSlider.value = _currentHealth;
+        if (_currentHealth > 0f)
         {
             // 잠깐 멈추고 싶다
             GameLogger.Log($"{_state} -> Hit");
