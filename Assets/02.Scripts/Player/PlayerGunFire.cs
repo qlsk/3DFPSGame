@@ -8,7 +8,6 @@ public class PlayerGunFire : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _hitEffectPrefab;
     [SerializeField] private float _hitEffectReturnDelay = 1f;
-    [SerializeField] private Slider _bulletCountSlider;
 
     [Header("스텟")]
     [SerializeField] private int _maxBulletCount = 30;
@@ -16,6 +15,10 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _range = 100f; // 사거리
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
+
+    [Header("UI")]
+    [SerializeField] private Slider _bulletCountSlider;
+    [SerializeField] private Image _reloadProgressFill;
 
     private float _fireTimer = 0;
     private int _bulletCount = 0;
@@ -26,6 +29,7 @@ public class PlayerGunFire : MonoBehaviour
         _bulletCount = _maxBulletCount;
         _bulletCountSlider.maxValue = _maxBulletCount;
         _bulletCountSlider.value = _bulletCount;
+        _reloadProgressFill.fillAmount = 0f;
     }
 
     private void Update()
@@ -45,6 +49,7 @@ public class PlayerGunFire : MonoBehaviour
                 StopCoroutine(_reloadCoroutine);
                 // GameLogger.Log("재장전 취소");
                 _reloadCoroutine = null;
+                _reloadProgressFill.fillAmount = 0f;
             }
             // 이 방식은 이 MonoBehaviour가 등록한 모든 Coroutine을 등록 취소한다
             // StopAllCoroutines();
@@ -87,11 +92,22 @@ public class PlayerGunFire : MonoBehaviour
 
     private IEnumerator Reloading_Coroutine()
     {
-        yield return new WaitForSeconds(_reloadTime);
+        float elapsedTime = 0f;
+        _reloadProgressFill.fillAmount = 0f;
+
+        while (elapsedTime < _reloadTime)
+        {
+            elapsedTime += Time.deltaTime;
+
+            _reloadProgressFill.fillAmount = Mathf.Clamp01(elapsedTime / _reloadTime);
+
+            yield return null;
+        }
 
         _bulletCount = _maxBulletCount;
-        _reloadCoroutine = null;
         UpdateBulletSlider();
+        _reloadProgressFill.fillAmount = 0f;
+        _reloadCoroutine = null;
     }
 
     private void UpdateBulletSlider()
