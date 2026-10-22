@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 마우스 오른쪽 버튼을 누르면 시선이 바라보는 방향으로 수류탄을 던진다.
 public class PlayerBombFire : MonoBehaviour
@@ -14,6 +16,17 @@ public class PlayerBombFire : MonoBehaviour
     [SerializeField] private int _maxThrowCount = 10;
     private int _currentThrowCount = 0;
 
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI _throwCountText;
+    [SerializeField] private Slider _throwPowerSlider;
+
+    private void Start()
+    {
+        _throwPowerSlider.maxValue = _maxThrowPower;
+        _throwPowerSlider.minValue = _minThrowPower;
+        UpdateThrowPowerSlider();
+    }
+
     private void Update()
     {
         // 1. 마우스 오른쪽 버튼 입력 받는 동안 Throw Power 상승
@@ -21,6 +34,8 @@ public class PlayerBombFire : MonoBehaviour
         {
             _currentThrowPower = Mathf.Min(_currentThrowPower + _throwPowerUpRate * Time.deltaTime, _maxThrowPower);
             // GameLogger.Log(_currentThrowPower);
+            _throwPowerSlider.gameObject.SetActive(true);
+            UpdateThrowPowerSlider();
         }
 
         // 1-2. 마우스 오른쪽 버튼 입력이 없어지면 발사
@@ -28,6 +43,7 @@ public class PlayerBombFire : MonoBehaviour
         {
             Shoot();
             _currentThrowPower = _minThrowPower;
+            _throwPowerSlider.gameObject.SetActive(false);
         }
     }
 
@@ -40,5 +56,10 @@ public class PlayerBombFire : MonoBehaviour
         // 3. 생성된 수류탄을 시선 방향으로 던지기
         Rigidbody rigidbody = bomb.GetComponent<Rigidbody>();
         rigidbody.AddForce(Camera.main.transform.forward * _currentThrowPower, ForceMode.Impulse);
+    }
+
+    private void UpdateThrowPowerSlider()
+    {
+        _throwPowerSlider.value = _currentThrowPower;
     }
 }
