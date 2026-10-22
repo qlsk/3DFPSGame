@@ -10,10 +10,13 @@ public class Drum : MonoBehaviour
     [SerializeField] private ParticleSystem _explosionEffectPrefab;
 
     [Header("스텟")]
+    [SerializeField] private float _damage = 100f;
     [SerializeField] private float _health = 30f;
     [SerializeField] private float _launchForce = 20f;
     [SerializeField] private float _spinPower = 5f;
     [SerializeField] private float _destroyDelay = 10f;
+    [SerializeField] private float _explosionRange = 4.5f;
+    [SerializeField] private float _explosionDelay = 0.2f;
 
     private Rigidbody _rigidbody;
     private float _currentHealth;
@@ -39,27 +42,44 @@ public class Drum : MonoBehaviour
 
         if (_currentHealth <= 0)
         {
-            StartCoroutine(Explode());
+            StartCoroutine(Explode_Coroutine());
         }
     }
 
-    private IEnumerator Explode()
+    private IEnumerator Explode_Coroutine()
     {
+        // 0. 폭발 하기 전에 대기
+        yield return new WaitForSeconds(_explosionDelay);
         // 1. 폭발 이펙트를 생성한다.
         ParticleSystem effect = Instantiate(_explosionEffectPrefab, transform.position, Quaternion.identity);
         effect.Play();
 
-        // 2. 위로 튀어오르며 빙글빙글 돈다.
+        // 2. 랜덤한 방향으로 튀어오르며 빙글빙글 돈다.
         Vector3 random = Random.insideUnitSphere * _launchForce;
-        random.x = Mathf.Abs(random.x);
         random.y = Mathf.Abs(random.y);
-        random.z = Mathf.Abs(random.z);
 
         _rigidbody.AddForce(random, ForceMode.Impulse);
         _rigidbody.AddTorque(Random.insideUnitSphere * _spinPower, ForceMode.Impulse);
 
-        // 3. 사라진다.
+        // 3. 주위에 폭발을 전달한다. (데미지를 준다)
+        ApplyAreaDamage();
+
+        // 4. 딜레이 후 사라진다.
         yield return new WaitForSeconds(_destroyDelay);
         Destroy(gameObject);
+    }
+
+    private void ApplyAreaDamage()
+    {
+        // 0. 주위에 있는 드럼통들을 모두 찾는다.
+        // Physics.OverlapSphere(원점, 반지름, 찾을 레이어들)
+        Collider[] colliders =
+            Physics.OverlapSphere(transform.position, _explosionRange, LayerMask.GetMask("Drum", "Monster"));
+        // 1. 좀비들과 드럼통들에게 데미지를 준다.
+        foreach (Collider col in colliders)
+        {
+            col.GetComponent<Drum>()?.Hit(_damage);
+            col.GetComponent<Zombie>()?.TakeDamage(_damage);
+        }
     }
 }
