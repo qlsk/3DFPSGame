@@ -88,6 +88,12 @@ public class PlayerGunFire : MonoBehaviour
                 LeanPool.Despawn(effect.gameObject, _hitEffectReturnDelay);
             }
         }
+
+        hitInfo.collider.GetComponent<Zombie>()?.TakeDamage(_damage);
+        if (hitInfo.collider.TryGetComponent(out Zombie zombie))
+        {
+            zombie.TakeDamage(_damage);
+        }
     }
 
     private IEnumerator Reloading_Coroutine()

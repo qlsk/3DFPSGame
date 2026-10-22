@@ -249,8 +249,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zombie
   _detectDistance: 8
+  _comebackDistance: 12
+  _attackRange: 2
+  _attackInterval: 1.2
   _moveSpeed: 5
-  _controller: {fileID: 0}
+  _health: 30
 --- !u!1 &116696788
 GameObject:
   m_ObjectHideFlags: 0

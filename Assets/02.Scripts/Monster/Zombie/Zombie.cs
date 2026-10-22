@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 // FSM(유한 상태 머신): 유한개의 상태가 있고, 상태마다 행동을 다르게 하여 AI를 구현하는 유명한 방법
@@ -20,9 +21,15 @@ public class Zombie : MonoBehaviour
 {
     [Header("스텟")]
     [SerializeField] private float _detectDistance = 8; // 플레이어를 발견하는 거리
+    [SerializeField] private float _comebackDistance = 12f; // 처음 자리에서 이만큼 멀어지면 돌아가는 거리
+    [SerializeField] private float _attackRange = 2f; // 공격 범위
+    [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
-    [SerializeField] private CharacterController _controller;
+    [SerializeField] private float _health = 30f;
 
+    private float _attackTimer = 0f;
+    private CharacterController _controller;
+    private Vector3 _startPosition;
     private GameObject _player;
 
     private ZombieState _state = ZombieState.Idle;
@@ -31,6 +38,7 @@ public class Zombie : MonoBehaviour
     {
         _player = GameObject.FindGameObjectWithTag("Player");
         _controller = GetComponent<CharacterController>();
+        _startPosition = transform.position;
     }
 
     private void Update()
@@ -56,6 +64,41 @@ public class Zombie : MonoBehaviour
         }
     }
 
+    // 대미지를 받는다.
+    public void TakeDamage(float damage)
+    {
+        if (_state == ZombieState.Death) return;
+        _health = Mathf.Clamp(_health - damage, 0f, _health);
+        StopAllCoroutines();
+        if (_health > 0f)
+        {
+            // 잠깐 멈추고 싶다
+            GameLogger.Log($"{_state} -> Hit");
+            _state = ZombieState.Hit;
+            StartCoroutine(Hit_Coroutine());
+        }
+        else
+        {
+            GameLogger.Log($"{_state} -> Death");
+            _state = ZombieState.Death;
+            StartCoroutine(Death_Coroutine());
+        }
+    }
+
+    private IEnumerator Hit_Coroutine()
+    {
+        yield return new WaitForSeconds(0.3f);
+        GameLogger.Log($"{_state} -> Trace");
+        _state = ZombieState.Trace;
+    }
+
+    private IEnumerator Death_Coroutine()
+    {
+        _controller.enabled = false;
+        yield return new WaitForSeconds(0.5f);
+        Destroy(gameObject);
+    }
+
     private void Idle()
     {
         // TODO: Idle 애니메이션 실행
@@ -64,27 +107,78 @@ public class Zombie : MonoBehaviour
         float distance = Vector3.Distance(transform.position, _player.transform.position);
         if (distance < _detectDistance)
         {
-            Debug.Log($"{_state} -> Trace");
+            GameLogger.Log($"{_state} -> Trace");
             _state = ZombieState.Trace;
         }
     }
 
+    // 추적: 플레이어를 쫓아간다.
     private void Trace()
     {
         // TODO: Run 애니메이션 실행
-        // 추적: 플레이어를 쫓아간다.
+
+        // 처음 자리에서 너무 멀어지면 돌아간다.
+        if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
+        {
+            GameLogger.Log($"{_state} -> Comeback");
+            _state = ZombieState.Comeback;
+            return;
+        }
+
+
+        // 플레이어가 공격 거리 안이면 공격한다.
+        if (Vector3.Distance(transform.position, _player.transform.position) <= _attackRange)
+        {
+            _attackTimer = 0f;
+            GameLogger.Log($"{_state} -> Attack");
+            _state = ZombieState.Attack;
+            return;
+        }
+
         Vector3 direction = _player.transform.position - transform.position;
         direction.y = 0;
         direction.Normalize();
+
         transform.forward = direction;
         _controller.SimpleMove(_moveSpeed * direction);
     }
 
     private void Comeback()
     {
+        // 처음 자리에 도달하면 Idle
+        if (Vector3.Distance(transform.position, _startPosition) < 1f)
+        {
+            GameLogger.Log($"{_state} -> Idle");
+            _state = ZombieState.Idle;
+            return;
+        }
+
+        // 처음 자리로 되돌아감
+        Vector3 direction = _startPosition - transform.position;
+        direction.y = 0;
+        direction.Normalize();
+        transform.forward = direction;
+        _controller.SimpleMove(_moveSpeed * direction);
     }
 
+    // 공격: 일정 시간마다 플레이어를 때린다.
     private void Attack()
     {
+        // 플레이어가 공격 사정 거리 밖으로 나가면 Trace
+        float distance = Vector3.Distance(transform.position, _player.transform.position);
+        if (distance > _attackRange)
+        {
+            GameLogger.Log($"{_state} -> Trace");
+            _state = ZombieState.Trace;
+        }
+
+        _attackTimer += Time.deltaTime;
+        if (_attackTimer >= _attackInterval)
+        {
+            // TODO : 플레이어
+            // TODO: 플레이어 때리기
+            GameLogger.Log("플레이어를 때렸습니다.");
+            _attackTimer = 0;
+        }
     }
 }
