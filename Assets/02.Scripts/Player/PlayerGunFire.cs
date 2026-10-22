@@ -90,10 +90,7 @@ public class PlayerGunFire : MonoBehaviour
         }
 
         hitInfo.collider.GetComponent<Zombie>()?.TakeDamage(_damage);
-        if (hitInfo.collider.TryGetComponent(out Zombie zombie))
-        {
-            zombie.TakeDamage(_damage);
-        }
+        hitInfo.collider.GetComponent<Drum>()?.Hit(_damage);
     }
 
     private IEnumerator Reloading_Coroutine()
