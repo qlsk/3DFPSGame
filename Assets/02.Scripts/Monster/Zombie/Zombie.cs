@@ -164,7 +164,7 @@ public class Zombie : MonoBehaviour
         if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
         {
             GameLogger.Log($"{_state} -> Comeback");
-            _state = ZombieState.Patrol;
+            _state = ZombieState.Comeback;
             return;
         }
 
@@ -189,15 +189,15 @@ public class Zombie : MonoBehaviour
     private void Comeback()
     {
         // 처음 자리에 도달하면 Idle
-        if (Vector3.Distance(transform.position, _startPosition) < 1f)
+        if (Vector3.Distance(transform.position, _targetPosition) < 1f)
         {
-            GameLogger.Log($"{_state} -> Idle");
-            _state = ZombieState.Idle;
+            GameLogger.Log($"{_state} -> Patrol");
+            _state = ZombieState.Patrol;
             return;
         }
 
         // 처음 자리로 되돌아감
-        Vector3 direction = _startPosition - transform.position;
+        Vector3 direction = _targetPosition - transform.position;
         direction.y = 0;
         direction.Normalize();
         transform.forward = direction;
