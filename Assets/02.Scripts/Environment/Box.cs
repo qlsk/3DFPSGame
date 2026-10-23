@@ -6,9 +6,9 @@ public class Box : MonoBehaviour, IDamageable
     [SerializeField] private float _health = 20f;
     private float _currentHealth;
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(DamageInfo damageInfo)
     {
-        _currentHealth = Mathf.Max(_currentHealth - damage, 0f);
+        _currentHealth = Mathf.Max(_currentHealth - damageInfo.Value, 0f);
     }
 
     private void Start()

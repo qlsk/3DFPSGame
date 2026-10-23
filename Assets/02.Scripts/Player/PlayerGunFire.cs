@@ -89,7 +89,12 @@ public class PlayerGunFire : MonoBehaviour
             }
         }
 
-        hitInfo.collider.GetComponent<IDamageable>()?.TakeDamage(_damage);
+        DamageInfo damageInfo = new DamageInfo();
+        damageInfo.Value = _damage;
+        damageInfo.HitPoint = hitInfo.point;
+        damageInfo.HitNormal = hitInfo.normal;
+
+        hitInfo.collider.GetComponent<IDamageable>()?.TakeDamage(damageInfo);
     }
 
     private IEnumerator Reloading_Coroutine()

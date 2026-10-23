@@ -31,7 +31,7 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
     [Header("이펙트")]
-    [SerializeField] private ParticleSystem _bloodEffectPrefab;
+    [SerializeField] private GameObject _bloodEffectPrefab;
 
     private float _attackTimer = 0f;
     private CharacterController _controller;
@@ -110,15 +110,19 @@ public class Zombie : MonoBehaviour, IDamageable
     }
 
     // 대미지를 받는다.
-    public void TakeDamage(float damage)
+    public void TakeDamage(DamageInfo damageInfo)
     {
         if (_state == ZombieState.Death) return;
-        _currentHealth = Mathf.Clamp(_currentHealth - damage, 0f, _health);
+        _currentHealth = Mathf.Clamp(_currentHealth - damageInfo.Value, 0f, _health);
         StopAllCoroutines();
         _hpSlider.value = _currentHealth;
         if (_currentHealth > 0f)
         {
-            // TODO: 뒤로 넉백, 맞은 부위에 피 이펙트를 실행
+            // 좀비의 자식으로 블러드 스프레이를 생성 -> 위치 수정
+            GameObject bloodSpray = Instantiate(_bloodEffectPrefab, gameObject.transform);
+            // bloodSpray.transform.SetParent(transform);
+            bloodSpray.transform.position = damageInfo.HitPoint;
+            bloodSpray.transform.forward = damageInfo.HitNormal;
             // 잠깐 멈추고 싶다
             GameLogger.Log($"{_state} -> Hit");
             _state = ZombieState.Hit;
