@@ -23,7 +23,7 @@ public class Player : MonoBehaviour, IDamageable
         if (_currentHealth <= 0f)
         {
             GameLogger.Log("플레이어가 쓰러졌다");
-            // TODO: 게임 오버
+            GameManager.Instance.GameOver();
         }
     }
 }
