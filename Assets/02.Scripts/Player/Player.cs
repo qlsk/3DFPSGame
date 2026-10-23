@@ -6,6 +6,8 @@ public class Player : MonoBehaviour, IDamageable
     public float MaxHealth => _maxHealth;
     private float _currentHealth;
     public float CurrentHealth => _currentHealth;
+    private float _maxColorAlpha = 0.4f;
+    [SerializeField] private UI_HitEffect _uiHitEffect;
 
     private void Start()
     {
@@ -15,6 +17,8 @@ public class Player : MonoBehaviour, IDamageable
     public void TakeDamage(DamageInfo damageInfo)
     {
         _currentHealth = Mathf.Max(_currentHealth - damageInfo.Value, 0f);
+
+        _uiHitEffect.Fade(_maxColorAlpha);
 
         if (_currentHealth <= 0f)
         {
