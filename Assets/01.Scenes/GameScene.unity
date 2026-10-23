@@ -2326,8 +2326,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC900\uBE44"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1d790a67b623b70488717d3d3ec32ed1, type: 2}
-  m_sharedMaterial: {fileID: -1750168140809316045, guid: 1d790a67b623b70488717d3d3ec32ed1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 98cc6dff672f87540be1ef12dd5e9e82, type: 2}
+  m_sharedMaterial: {fileID: -686892800612687194, guid: 98cc6dff672f87540be1ef12dd5e9e82, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
