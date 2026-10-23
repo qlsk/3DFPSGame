@@ -8,11 +8,12 @@ public class PlayerMove : MonoBehaviour
 
     private const float Gravity = -20f;
     private const int MaxJumps = 2;
-    private const float MaxStamina = 100f;
-
+    private const float DefaultMaxStamina = 100f;
+    public float MaxStamina => DefaultMaxStamina;
     private float _yVelocity = 0f; // 위 아래 속도, 매 프레임마다 중력 가속도가 붙는다.
     private int _jumpCount = 0; // 점프 횟수
     private float _stamina = 0f;
+    public float Stamina => _stamina;
 
     [Header("스텟")]
     [SerializeField] private float _moveSpeed = 7f;
@@ -20,19 +21,16 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float _jumpPower = 10f;
     [SerializeField] private float _staminaRecovery = 15f;
     [SerializeField] private float _sprintCost = 10f;
+    public float SprintCost => _sprintCost;
     [SerializeField] private float _jumpCost = 20f;
 
     [Header("컴포넌트")]
     [SerializeField] private CharacterController _characterController;
-    [SerializeField] private Slider _playerStaminaSlider;
 
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
-        _stamina = MaxStamina;
-        _playerStaminaSlider.maxValue = MaxStamina;
-        _playerStaminaSlider.minValue = _sprintCost;
-        _playerStaminaSlider.value = _stamina;
+        _stamina = DefaultMaxStamina;
     }
 
     private void Update()
@@ -112,17 +110,10 @@ public class PlayerMove : MonoBehaviour
     private void UseStamina(float value)
     {
         _stamina -= value;
-        UpdateStaminaSlider(_stamina);
     }
 
     private void RecoveryStamina(float value)
     {
-        _stamina = Mathf.Min(MaxStamina, _stamina + value);
-        UpdateStaminaSlider(_stamina);
-    }
-
-    public void UpdateStaminaSlider(float value)
-    {
-        _playerStaminaSlider.value = value;
+        _stamina = Mathf.Min(DefaultMaxStamina, _stamina + value);
     }
 }

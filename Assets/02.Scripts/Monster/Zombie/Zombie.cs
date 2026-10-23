@@ -27,7 +27,8 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private float _attackRange = 2f; // 공격 범위
     [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
-    [SerializeField] private float _maxHealth = 30f;
+    [SerializeField] private float _maxHealth = 30f; // 최대 체력
+    [SerializeField] private float _attackDamage = 10f; // 대미지
     public float MaxHealth => _maxHealth;
     [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
@@ -43,7 +44,6 @@ public class Zombie : MonoBehaviour, IDamageable
     public float CurrentHealth => _currentHealth;
     private ZombieState _state = ZombieState.Patrol;
     private Vector3 _targetPosition;
-
 
     private void Start()
     {
@@ -223,8 +223,14 @@ public class Zombie : MonoBehaviour, IDamageable
         _attackTimer += Time.deltaTime;
         if (_attackTimer >= _attackInterval)
         {
-            // TODO : 플레이어
-            // TODO: 플레이어 때리기
+            // TODO : 공격 애니메이션 실행
+            DamageInfo damageInfo = new DamageInfo()
+            {
+                Value = _attackDamage,
+                HitPoint = _player.transform.position,
+                HitNormal = (transform.position - _player.transform.position).normalized,
+            };
+            _player.GetComponent<IDamageable>().TakeDamage(damageInfo);
             GameLogger.Log("플레이어를 때렸습니다.");
             _attackTimer = 0;
         }

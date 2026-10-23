@@ -11,24 +11,23 @@ public class PlayerGunFire : MonoBehaviour
 
     [Header("스텟")]
     [SerializeField] private int _maxBulletCount = 30;
+    public int MaxBulletCount => _maxBulletCount;
     [SerializeField] private float _reloadTime = 3f;
     [SerializeField] private float _range = 100f; // 사거리
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
     [Header("UI")]
-    [SerializeField] private Slider _bulletCountSlider;
     [SerializeField] private Image _reloadProgressFill;
 
     private float _fireTimer = 0;
     private int _bulletCount = 0;
+    public int BulletCount => _bulletCount;
     private Coroutine _reloadCoroutine = null;
 
     private void Start()
     {
         _bulletCount = _maxBulletCount;
-        _bulletCountSlider.maxValue = _maxBulletCount;
-        _bulletCountSlider.value = _bulletCount;
         _reloadProgressFill.fillAmount = 0f;
     }
 
@@ -40,7 +39,6 @@ public class PlayerGunFire : MonoBehaviour
         if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
         {
             _bulletCount--;
-            UpdateBulletSlider();
 
             _fireTimer = _fireInterval;
             Shoot();
@@ -112,13 +110,7 @@ public class PlayerGunFire : MonoBehaviour
         }
 
         _bulletCount = _maxBulletCount;
-        UpdateBulletSlider();
         _reloadProgressFill.fillAmount = 0f;
         _reloadCoroutine = null;
-    }
-
-    private void UpdateBulletSlider()
-    {
-        _bulletCountSlider.value = _bulletCount;
     }
 }

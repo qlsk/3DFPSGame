@@ -9,24 +9,20 @@ public class PlayerBombFire : MonoBehaviour
     [SerializeField] private Bomb _bombPrefab;
 
     [SerializeField] private float _minThrowPower = 15f;
+    public float MinThrowPower => _minThrowPower;
     [SerializeField] private float _maxThrowPower = 90f;
+    public float MaxThrowPower => _maxThrowPower;
     [SerializeField] private float _throwPowerUpRate = 15f;
     private float _currentThrowPower = 15f;
+    public float CurrentThrowPower => _currentThrowPower;
 
     [SerializeField] private int _maxThrowCount = 10;
+    public int MaxThrowCount => _maxThrowCount;
     private int _currentThrowCount = 0;
+    public int CurrentThrowCount => _currentThrowCount;
 
-    [Header("UI")]
-    [SerializeField] private TextMeshProUGUI _throwCountText;
-    [SerializeField] private Slider _throwPowerSlider;
-
-    private void Start()
-    {
-        _throwPowerSlider.maxValue = _maxThrowPower;
-        _throwPowerSlider.minValue = _minThrowPower;
-        UpdateThrowPowerSlider();
-        UpdateThrowCountText();
-    }
+    private bool _isCharging = false;
+    public bool IsCharging => _isCharging;
 
     private void Update()
     {
@@ -35,8 +31,7 @@ public class PlayerBombFire : MonoBehaviour
         {
             _currentThrowPower = Mathf.Min(_currentThrowPower + _throwPowerUpRate * Time.deltaTime, _maxThrowPower);
             // GameLogger.Log(_currentThrowPower);
-            _throwPowerSlider.gameObject.SetActive(true);
-            UpdateThrowPowerSlider();
+            _isCharging = true;
         }
 
         // 1-2. 마우스 오른쪽 버튼 입력이 없어지면 발사
@@ -44,8 +39,7 @@ public class PlayerBombFire : MonoBehaviour
         {
             Shoot();
             _currentThrowPower = _minThrowPower;
-            _throwPowerSlider.gameObject.SetActive(false);
-            UpdateThrowCountText();
+            _isCharging = false;
         }
     }
 
@@ -58,15 +52,5 @@ public class PlayerBombFire : MonoBehaviour
         // 3. 생성된 수류탄을 시선 방향으로 던지기
         Rigidbody rigidbody = bomb.GetComponent<Rigidbody>();
         rigidbody.AddForce(Camera.main.transform.forward * _currentThrowPower, ForceMode.Impulse);
-    }
-
-    private void UpdateThrowPowerSlider()
-    {
-        _throwPowerSlider.value = _currentThrowPower;
-    }
-
-    private void UpdateThrowCountText()
-    {
-        _throwCountText.text = $"{_maxThrowCount - _currentThrowCount}/{_maxThrowCount}";
     }
 }
