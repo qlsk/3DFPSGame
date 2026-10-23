@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 // 체력이 0이 되면 위로 튀어오르며 폭발하는 드럼통
 [RequireComponent(typeof(Rigidbody))]
-public class Drum : MonoBehaviour
+public class Drum : MonoBehaviour, IDamageable
 {
     [SerializeField] private ParticleSystem _explosionEffectPrefab;
 
@@ -31,7 +31,7 @@ public class Drum : MonoBehaviour
         _currentHealth = _health;
     }
 
-    public void Hit(float damage)
+    public void TakeDamage(float damage)
     {
         if (_currentHealth <= 0)
         {
@@ -78,8 +78,7 @@ public class Drum : MonoBehaviour
         // 1. 좀비들과 드럼통들에게 데미지를 준다.
         foreach (Collider col in colliders)
         {
-            col.GetComponent<Drum>()?.Hit(_damage);
-            col.GetComponent<Zombie>()?.TakeDamage(_damage);
+            col.GetComponent<IDamageable>()?.TakeDamage(_damage);
         }
     }
 }
