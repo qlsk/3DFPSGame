@@ -27,7 +27,8 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private float _attackRange = 2f; // 공격 범위
     [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
-    [SerializeField] private float _health = 30f;
+    [SerializeField] private float _maxHealth = 30f;
+    public float MaxHealth => _maxHealth;
     [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
     [Header("이펙트")]
@@ -39,10 +40,10 @@ public class Zombie : MonoBehaviour, IDamageable
     private Vector3 _endPosition;
     private GameObject _player;
     private float _currentHealth;
+    public float CurrentHealth => _currentHealth;
     private ZombieState _state = ZombieState.Patrol;
     private Vector3 _targetPosition;
 
-    [SerializeField] private Slider _hpSlider;
 
     private void Start()
     {
@@ -51,14 +52,11 @@ public class Zombie : MonoBehaviour, IDamageable
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
-        _currentHealth = _health;
-        _hpSlider.maxValue = _health;
-        _hpSlider.value = _currentHealth;
+        _currentHealth = _maxHealth;
     }
 
     private void Update()
     {
-        _hpSlider.transform.LookAt(_player.transform);
         switch (_state)
         {
             case ZombieState.Idle:
@@ -113,9 +111,8 @@ public class Zombie : MonoBehaviour, IDamageable
     public void TakeDamage(DamageInfo damageInfo)
     {
         if (_state == ZombieState.Death) return;
-        _currentHealth = Mathf.Clamp(_currentHealth - damageInfo.Value, 0f, _health);
+        _currentHealth = Mathf.Clamp(_currentHealth - damageInfo.Value, 0f, _maxHealth);
         StopAllCoroutines();
-        _hpSlider.value = _currentHealth;
         if (_currentHealth > 0f)
         {
             // 좀비의 자식으로 블러드 스프레이를 생성 -> 위치 수정
