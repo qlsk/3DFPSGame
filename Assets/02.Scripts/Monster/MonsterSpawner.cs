@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class MonsterSpawner : MonoBehaviour
 {
@@ -7,11 +9,15 @@ public class MonsterSpawner : MonoBehaviour
     [SerializeField] private Zombie _zombiePrefabs;
     [SerializeField] private Transform[] _spawnPoints;
     [SerializeField] private float _maxAliveCount = 10;
+    public float MaxAliveCount => _maxAliveCount;
     [SerializeField] private float _spawnInterval = 3f;
     [SerializeField] private float _spawnRadius = 2f;
 
     private int _aliveCount;
+    public int AliveCount => _aliveCount;
     private float _spawnTimer;
+
+    public event Action OnAliveCountChanged;
 
     private void Update()
     {
@@ -34,10 +40,13 @@ public class MonsterSpawner : MonoBehaviour
 
         Zombie newMonster = Instantiate(_zombiePrefabs, position, Quaternion.identity);
         newMonster.OnDeath += OnMonsterDeath;
+        _aliveCount++;
+        OnAliveCountChanged?.Invoke();
     }
 
     private void OnMonsterDeath()
     {
         _aliveCount--;
+        OnAliveCountChanged?.Invoke();
     }
 }

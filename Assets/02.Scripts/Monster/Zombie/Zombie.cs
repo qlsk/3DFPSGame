@@ -142,7 +142,6 @@ public class Zombie : MonoBehaviour, IDamageable
             StartCoroutine(Death_Coroutine());
             OnDeath?.Invoke();
         }
-
         OnDamaged?.Invoke();
     }
 
