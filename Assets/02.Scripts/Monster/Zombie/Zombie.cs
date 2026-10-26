@@ -47,6 +47,7 @@ public class Zombie : MonoBehaviour, IDamageable
     private Vector3 _targetPosition;
 
     public event Action OnDamaged;
+    public event Action OnDeath;
 
     private void Awake()
     {
@@ -139,6 +140,7 @@ public class Zombie : MonoBehaviour, IDamageable
             GameLogger.Log($"{_state} -> Death");
             _state = ZombieState.Death;
             StartCoroutine(Death_Coroutine());
+            OnDeath?.Invoke();
         }
 
         OnDamaged?.Invoke();
