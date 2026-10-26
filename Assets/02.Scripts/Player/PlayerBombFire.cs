@@ -28,6 +28,8 @@ public class PlayerBombFire : MonoBehaviour
     {
         if (GameManager.Instance.State != GameState.Playing) return;
 
+        bool isMouseVisible = Cursor.visible;
+        if (isMouseVisible) return;
         // 1. 마우스 오른쪽 버튼 입력 받는 동안 Throw Power 상승
         if (Input.GetButton("Fire2") && _currentThrowCount < _maxThrowCount && _currentThrowPower <= _maxThrowPower)
         {
