@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Player : MonoBehaviour, IDamageable
@@ -6,8 +7,9 @@ public class Player : MonoBehaviour, IDamageable
     public float MaxHealth => _maxHealth;
     private float _currentHealth;
     public float CurrentHealth => _currentHealth;
-    private float _maxColorAlpha = 0.4f;
-    [SerializeField] private UI_HitEffect _uiHitEffect;
+
+    // Action 자료형: 함수들을 저장할 수 있다.
+    public event Action OnDamaged;
 
     private void Start()
     {
@@ -18,7 +20,8 @@ public class Player : MonoBehaviour, IDamageable
     {
         _currentHealth = Mathf.Max(_currentHealth - damageInfo.Value, 0f);
 
-        _uiHitEffect.Fade(_maxColorAlpha);
+
+        OnDamaged?.Invoke();
 
         if (_currentHealth <= 0f)
         {

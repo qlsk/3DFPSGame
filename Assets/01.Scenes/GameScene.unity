@@ -4485,7 +4485,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 56
+  orthographic size: 4
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -5078,7 +5078,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   _maxHealth: 100
-  _uiHitEffect: {fileID: 1352444982}
 --- !u!114 &1637235802
 MonoBehaviour:
   m_ObjectHideFlags: 0

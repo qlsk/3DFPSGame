@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Lean.Pool;
 using UnityEngine;
@@ -24,6 +25,8 @@ public class PlayerGunFire : MonoBehaviour
     private int _bulletCount = 0;
     public int BulletCount => _bulletCount;
     private Coroutine _reloadCoroutine = null;
+
+    public event Action OnFire;
 
     private void Start()
     {
@@ -67,6 +70,8 @@ public class PlayerGunFire : MonoBehaviour
 
     private void Shoot()
     {
+        OnFire?.Invoke();
+
         // 2. 레이(광선)을 생상하고 발사될 위치와 진행 방향 설정하기
         Transform cameraTransform = Camera.main.transform;
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);

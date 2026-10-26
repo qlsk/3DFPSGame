@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,6 +27,8 @@ public class PlayerMove : MonoBehaviour
 
     [Header("컴포넌트")]
     [SerializeField] private CharacterController _characterController;
+
+    public event Action OnStaminaChange;
 
     private void Awake()
     {
@@ -111,10 +114,12 @@ public class PlayerMove : MonoBehaviour
     private void UseStamina(float value)
     {
         _stamina -= value;
+        OnStaminaChange?.Invoke();
     }
 
     private void RecoveryStamina(float value)
     {
         _stamina = Mathf.Min(DefaultMaxStamina, _stamina + value);
+        OnStaminaChange?.Invoke();
     }
 }
