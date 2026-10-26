@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,6 +46,13 @@ public class Zombie : MonoBehaviour, IDamageable
     private ZombieState _state = ZombieState.Patrol;
     private Vector3 _targetPosition;
 
+    public event Action OnDamaged;
+
+    private void Awake()
+    {
+        _currentHealth = _maxHealth;
+    }
+
     private void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
@@ -52,7 +60,6 @@ public class Zombie : MonoBehaviour, IDamageable
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
-        _currentHealth = _maxHealth;
     }
 
     private void Update()
@@ -133,6 +140,8 @@ public class Zombie : MonoBehaviour, IDamageable
             _state = ZombieState.Death;
             StartCoroutine(Death_Coroutine());
         }
+
+        OnDamaged?.Invoke();
     }
 
     private IEnumerator Hit_Coroutine()
