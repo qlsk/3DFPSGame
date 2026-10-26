@@ -13,6 +13,7 @@ public enum ZombieState
 {
     Idle, // 대기: 제자리에서 플레이어를 기다린다.
     Patrol, // 순찰: 두 지점을 오가며 순찰한다.
+    Roam, // 배회: 처음 자리 주변의 랜덤한 지점으로 돌아다닌다.
     Trace, // 추적: 플레이어를 쫓아간다.
     Comeback, // 복귀: 처음 자리로 돌아간다.
     Attack, // 공격: 일정 시간마다 플레이어를 때린다.
@@ -33,6 +34,12 @@ public class Zombie : MonoBehaviour, IDamageable
     public float MaxHealth => _maxHealth;
     [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
+    [Header("배회")]
+    [SerializeField] private float _roamRadius = 8f; // 처음 자리 기준 배회 반경 (복귀 거리보다 작아야 한다)
+    [SerializeField] private float _roamSpeed = 2f; // 배회 이동속도
+    [SerializeField] private Vector2 _roamWaitRange = new Vector2(1f, 3f); // 도착 후 쉬는 시간 (최소, 최대)
+    [SerializeField] private float _roamTimeout = 6f; // 목적지에 못 가는 경우 포기하는 시간
+
     [Header("이펙트")]
     [SerializeField] private GameObject _bloodEffectPrefab;
 
@@ -43,8 +50,11 @@ public class Zombie : MonoBehaviour, IDamageable
     private GameObject _player;
     private float _currentHealth;
     public float CurrentHealth => _currentHealth;
-    private ZombieState _state = ZombieState.Patrol;
+    private ZombieState _state = ZombieState.Idle;
     private Vector3 _targetPosition;
+    private Vector3 _roamTarget;
+    private float _roamTimer;
+    private float _waitTimer;
 
     public event Action OnDamaged;
     public event Action OnDeath;
@@ -61,6 +71,7 @@ public class Zombie : MonoBehaviour, IDamageable
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
+        StartRoam();
     }
 
     private void Update()
@@ -74,6 +85,9 @@ public class Zombie : MonoBehaviour, IDamageable
                 break;
             case ZombieState.Patrol:
                 Patrol();
+                break;
+            case ZombieState.Roam:
+                Roam();
                 break;
             case ZombieState.Trace:
                 Trace();
@@ -91,7 +105,7 @@ public class Zombie : MonoBehaviour, IDamageable
         }
     }
 
-    public void Patrol()
+    private void Patrol()
     {
         if (Vector3.Distance(transform.position, _startPosition) < 1f)
         {
@@ -109,6 +123,49 @@ public class Zombie : MonoBehaviour, IDamageable
         transform.forward = direction;
         _controller.SimpleMove(_moveSpeed * direction);
 
+        float distance = Vector3.Distance(transform.position, _player.transform.position);
+        if (distance < _detectDistance)
+        {
+            GameLogger.Log($"{_state} -> Trace");
+            _state = ZombieState.Trace;
+        }
+    }
+
+    // 배회: 처음 자리 주변의 랜덤한 지점으로 걸어간다.
+    private void Roam()
+    {
+        _roamTimer += Time.deltaTime;
+
+        Vector3 direction = _roamTarget - transform.position;
+        direction.y = 0;
+
+        // 도착했거나 너무 오래 걸리면(벽에 막힘 등) 잠깐 쉰다.
+        if (direction.magnitude < 0.5f || _roamTimer >= _roamTimeout)
+        {
+            _waitTimer = UnityEngine.Random.Range(_roamWaitRange.x, _roamWaitRange.y);
+            GameLogger.Log($"{_state} -> Idle");
+            _state = ZombieState.Idle;
+            return;
+        }
+
+        direction.Normalize();
+        transform.forward = direction;
+        _controller.SimpleMove(_roamSpeed * direction);
+
+        CheckDetectPlayer();
+    }
+
+    private void StartRoam()
+    {
+        Vector2 offset = UnityEngine.Random.insideUnitCircle * _roamRadius;
+        _roamTarget = _startPosition + new Vector3(offset.x, 0f, offset.y);
+        _roamTimer = 0f;
+        _state = ZombieState.Roam;
+    }
+
+    // 플레이어가 감지 거리 안에 있으면 Trace 상태로 전이한다.
+    private void CheckDetectPlayer()
+    {
         float distance = Vector3.Distance(transform.position, _player.transform.position);
         if (distance < _detectDistance)
         {
@@ -142,6 +199,7 @@ public class Zombie : MonoBehaviour, IDamageable
             StartCoroutine(Death_Coroutine());
             OnDeath?.Invoke();
         }
+
         OnDamaged?.Invoke();
     }
 
@@ -164,11 +222,15 @@ public class Zombie : MonoBehaviour, IDamageable
         // TODO: Idle 애니메이션 실행
         // 대기: 제자리에서 플레이어를 기다린다.
         // 플레이어와 가까워지면 Trace 상태로 전이한다.
-        float distance = Vector3.Distance(transform.position, _player.transform.position);
-        if (distance < _detectDistance)
+        CheckDetectPlayer();
+        if (_state != ZombieState.Idle) return;
+
+        // 쉬는 시간이 끝나면 다시 배회한다.
+        _waitTimer -= Time.deltaTime;
+        if (_waitTimer <= 0f)
         {
-            GameLogger.Log($"{_state} -> Trace");
-            _state = ZombieState.Trace;
+            GameLogger.Log($"{_state} -> Roam");
+            StartRoam();
         }
     }
 
@@ -180,11 +242,10 @@ public class Zombie : MonoBehaviour, IDamageable
         // 처음 자리에서 너무 멀어지면 돌아간다.
         if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
         {
-            GameLogger.Log($"{_state} -> Comeback");
-            _state = ZombieState.Comeback;
+            GameLogger.Log($"{_state} -> Idle");
+            _state = ZombieState.Idle;
             return;
         }
-
 
         // 플레이어가 공격 거리 안이면 공격한다.
         if (Vector3.Distance(transform.position, _player.transform.position) <= _attackRange)
@@ -205,16 +266,16 @@ public class Zombie : MonoBehaviour, IDamageable
 
     private void Comeback()
     {
-        // 처음 자리에 도달하면 Idle
-        if (Vector3.Distance(transform.position, _targetPosition) < 1f)
+        // 처음 자리에 도달하면 다시 배회한다.
+        if (Vector3.Distance(transform.position, _startPosition) < 1f)
         {
-            GameLogger.Log($"{_state} -> Patrol");
-            _state = ZombieState.Patrol;
+            GameLogger.Log($"{_state} -> Roam");
+            StartRoam();
             return;
         }
 
         // 처음 자리로 되돌아감
-        Vector3 direction = _targetPosition - transform.position;
+        Vector3 direction = _startPosition - transform.position;
         direction.y = 0;
         direction.Normalize();
         transform.forward = direction;
