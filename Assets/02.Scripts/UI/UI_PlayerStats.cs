@@ -31,7 +31,7 @@ public class UI_PlayerStats : MonoBehaviour
 
         _bulletCountSlider.maxValue = _playerGunFire.MaxBulletCount;
         _bulletCountSlider.value = _playerGunFire.BulletCount;
-        _playerGunFire.OnFire += RefreshBulletCount;
+        _playerGunFire.OnBulletCountChanged += RefreshBulletCount;
 
         _playerStaminaSlider.maxValue = _playerMove.MaxStamina;
         _playerStaminaSlider.minValue = _playerMove.SprintCost;

@@ -26,7 +26,7 @@ public class PlayerGunFire : MonoBehaviour
     public int BulletCount => _bulletCount;
     private Coroutine _reloadCoroutine = null;
 
-    public event Action OnFire;
+    public event Action OnBulletCountChanged;
 
     private void Start()
     {
@@ -70,7 +70,7 @@ public class PlayerGunFire : MonoBehaviour
 
     private void Shoot()
     {
-        OnFire?.Invoke();
+        OnBulletCountChanged?.Invoke();
 
         // 2. 레이(광선)을 생상하고 발사될 위치와 진행 방향 설정하기
         Transform cameraTransform = Camera.main.transform;
@@ -120,6 +120,7 @@ public class PlayerGunFire : MonoBehaviour
         }
 
         _bulletCount = _maxBulletCount;
+        OnBulletCountChanged?.Invoke();
         _reloadProgressFill.fillAmount = 0f;
         _reloadCoroutine = null;
     }
