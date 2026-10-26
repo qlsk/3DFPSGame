@@ -24,8 +24,8 @@ public enum ZombieState
 public class Zombie : MonoBehaviour, IDamageable
 {
     [Header("스텟")]
-    [SerializeField] private float _detectDistance = 8; // 플레이어를 발견하는 거리
-    [SerializeField] private float _comebackDistance = 12f; // 처음 자리에서 이만큼 멀어지면 돌아가는 거리
+    [SerializeField] private float _detectDistance = 8f; // 플레이어를 발견하는 거리
+    [SerializeField] private float _comebackDistance = 12f; // 플레이어 추적을 포기하는 거리
     [SerializeField] private float _attackRange = 2f; // 공격 범위
     [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
@@ -240,12 +240,12 @@ public class Zombie : MonoBehaviour, IDamageable
         // TODO: Run 애니메이션 실행
 
         // 처음 자리에서 너무 멀어지면 돌아간다.
-        if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
-        {
-            GameLogger.Log($"{_state} -> Idle");
-            _state = ZombieState.Idle;
-            return;
-        }
+        // if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
+        // {
+        //     GameLogger.Log($"{_state} -> Idle");
+        //     _state = ZombieState.Idle;
+        //     return;
+        // }
 
         // 플레이어가 공격 거리 안이면 공격한다.
         if (Vector3.Distance(transform.position, _player.transform.position) <= _attackRange)
@@ -253,6 +253,13 @@ public class Zombie : MonoBehaviour, IDamageable
             _attackTimer = 0f;
             GameLogger.Log($"{_state} -> Attack");
             _state = ZombieState.Attack;
+            return;
+        }
+
+        if (Vector3.Distance(transform.position, _player.transform.position) >= _comebackDistance)
+        {
+            GameLogger.Log($"{_state} -> Idle");
+            _state = ZombieState.Idle;
             return;
         }
 
