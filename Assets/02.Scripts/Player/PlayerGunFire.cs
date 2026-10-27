@@ -18,6 +18,10 @@ public class PlayerGunFire : MonoBehaviour
     [SerializeField] private float _damage = 10f; // 공격력
     [SerializeField] private float _fireInterval = 0.1f; // 발사 속도
 
+    [Header("궤적")]
+    [SerializeField] private BulletTracer _bulletTracer;
+    [SerializeField] private Transform _muzzle;
+
     [Header("UI")]
     [SerializeField] private Image _reloadProgressFill;
 
@@ -81,6 +85,12 @@ public class PlayerGunFire : MonoBehaviour
 
         // 4. 레이를 발사하고, 만일 부딛힌 물체가 있다면 이펙트 표시하기
         bool isHit = Physics.Raycast(ray, out hitInfo, _range);
+
+        // 5. 총구에서 맞은 곳(안 맞았다면 사거리 끝)까지 궤적을 그린다.
+        Vector3 muzzlePosition = _muzzle.position;
+        Vector3 endPoint = isHit ? hitInfo.point : ray.GetPoint(_range);
+        _bulletTracer.Show(muzzlePosition, endPoint);
+
         if (isHit)
         {
             // GameLogger.Log($"{hitInfo.collider.name}이 총알을 맞았다. 데미지: {_damage}");
@@ -95,14 +105,14 @@ public class PlayerGunFire : MonoBehaviour
 
                 LeanPool.Despawn(effect.gameObject, _hitEffectReturnDelay);
             }
+
+            DamageInfo damageInfo = new DamageInfo();
+            damageInfo.Value = _damage;
+            damageInfo.HitPoint = hitInfo.point;
+            damageInfo.HitNormal = hitInfo.normal;
+
+            hitInfo.collider.GetComponent<IDamageable>()?.TakeDamage(damageInfo);
         }
-
-        DamageInfo damageInfo = new DamageInfo();
-        damageInfo.Value = _damage;
-        damageInfo.HitPoint = hitInfo.point;
-        damageInfo.HitNormal = hitInfo.normal;
-
-        hitInfo.collider.GetComponent<IDamageable>()?.TakeDamage(damageInfo);
     }
 
     private IEnumerator Reloading_Coroutine()
