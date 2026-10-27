@@ -27,7 +27,8 @@ public enum ZombieAnimation
     Idle,
     Walk,
     Run,
-    Attack
+    Attack,
+    Hit
 }
 
 [RequireComponent(typeof(NavMeshAgent))]
@@ -151,6 +152,9 @@ public class Zombie : MonoBehaviour, IDamageable
                 break;
             case ZombieState.Attack:
                 next = ZombieAnimation.Idle;
+                break;
+            case ZombieState.Hit:
+                next = ZombieAnimation.Hit;
                 break;
             default:
                 return;
