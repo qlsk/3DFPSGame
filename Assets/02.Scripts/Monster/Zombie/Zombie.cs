@@ -21,6 +21,15 @@ public enum ZombieState
     Death // 죽음: 스러지고 잠시 뒤 사라진다.
 }
 
+// 좀비 애니메이션 (ZombieAC 컨트롤러의 상태 이름과 같아야 한다)
+public enum ZombieAnimation
+{
+    Idle,
+    Walk,
+    Run,
+    Attack
+}
+
 [RequireComponent(typeof(NavMeshAgent))]
 public class Zombie : MonoBehaviour, IDamageable
 {
@@ -29,6 +38,7 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private float _comebackDistance = 12f; // 플레이어 추적을 포기하는 거리
     [SerializeField] private float _attackRange = 2f; // 공격 범위
     [SerializeField] private float _attackInterval = 1.2f; // 공격 간격
+    [SerializeField] private float _attackAnimationTime = 1f; // 공격 애니메이션 길이, 끝나면 Idle로 돌아간다
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
     [SerializeField] private float _maxHealth = 30f; // 최대 체력
     [SerializeField] private float _attackDamage = 10f; // 대미지
@@ -62,6 +72,10 @@ public class Zombie : MonoBehaviour, IDamageable
 
     private NavMeshAgent _agent;
 
+    private Animator _animator;
+    private ZombieState _animatedState = ZombieState.Idle; // 마지막으로 애니메이션을 맞춘 상태
+    private ZombieAnimation _currentAnimation = ZombieAnimation.Idle; // 지금 재생 중인 애니메이션 (Animator 기본 상태가 Idle)
+
     private void Awake()
     {
         _currentHealth = _maxHealth;
@@ -76,6 +90,7 @@ public class Zombie : MonoBehaviour, IDamageable
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
+        _animator = GetComponentInChildren<Animator>();
         StartRoam();
     }
 
@@ -108,6 +123,47 @@ public class Zombie : MonoBehaviour, IDamageable
             case ZombieState.Death:
                 break;
         }
+
+        UpdateAnimation();
+    }
+
+    // 상태가 바뀐 프레임에만 그 상태에 맞는 애니메이션으로 전이한다.
+    // 상태 전이가 코루틴(Hit 등)에서도 일어나므로 전이 코드마다 넣지 않고 한 곳에서 처리한다.
+    private void UpdateAnimation()
+    {
+        if (_state == _animatedState) return;
+        _animatedState = _state;
+
+        ZombieAnimation next;
+        switch (_state)
+        {
+            case ZombieState.Idle:
+                next = ZombieAnimation.Idle;
+                break;
+            case ZombieState.Patrol:
+            case ZombieState.Roam:
+                next = ZombieAnimation.Walk;
+                break;
+            case ZombieState.Trace:
+            case ZombieState.Comeback:
+                next = ZombieAnimation.Run;
+                break;
+            case ZombieState.Attack:
+                next = ZombieAnimation.Idle;
+                break;
+            default:
+                return;
+        }
+
+        PlayAnimation(next);
+    }
+
+    private void PlayAnimation(ZombieAnimation next)
+    {
+        if (next == _currentAnimation) return;
+
+        _animator.SetTrigger($"{_currentAnimation}To{next}");
+        _currentAnimation = next;
     }
 
     private void Patrol()
@@ -332,12 +388,21 @@ public class Zombie : MonoBehaviour, IDamageable
         {
             GameLogger.Log($"{_state} -> Trace");
             _state = ZombieState.Trace;
+            return;
         }
 
         _attackTimer += Time.deltaTime;
+
+        // 공격 모션이 끝나면 다음 공격 딜레이 동안 Idle로 기다린다.
+        if (_currentAnimation == ZombieAnimation.Attack && _attackTimer >= _attackAnimationTime)
+        {
+            PlayAnimation(ZombieAnimation.Idle);
+        }
+
         if (_attackTimer >= _attackInterval)
         {
-            // TODO : 공격 애니메이션 실행
+            // 공격 딜레이가 끝나면 한 번 공격한다.
+            PlayAnimation(ZombieAnimation.Attack);
             DamageInfo damageInfo = new DamageInfo()
             {
                 Value = _attackDamage,
