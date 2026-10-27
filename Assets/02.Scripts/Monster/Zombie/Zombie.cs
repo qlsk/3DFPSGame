@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.AI;
 
 // FSM(유한 상태 머신): 유한개의 상태가 있고, 상태마다 행동을 다르게 하여 AI를 구현하는 유명한 방법
 // - "상태": 객체가 가질 수 있는 어떤 조건이나 상황
@@ -21,6 +21,7 @@ public enum ZombieState
     Death // 죽음: 스러지고 잠시 뒤 사라진다.
 }
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class Zombie : MonoBehaviour, IDamageable
 {
     [Header("스텟")]
@@ -44,7 +45,7 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private GameObject _bloodEffectPrefab;
 
     private float _attackTimer = 0f;
-    private CharacterController _controller;
+    // private CharacterController _controller;
     private Vector3 _startPosition;
     private Vector3 _endPosition;
     private GameObject _player;
@@ -59,6 +60,8 @@ public class Zombie : MonoBehaviour, IDamageable
     public event Action OnDamaged;
     public event Action OnDeath;
 
+    private NavMeshAgent _agent;
+
     private void Awake()
     {
         _currentHealth = _maxHealth;
@@ -67,7 +70,9 @@ public class Zombie : MonoBehaviour, IDamageable
     private void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
-        _controller = GetComponent<CharacterController>();
+        // _controller = GetComponent<CharacterController>();
+        // 길을 찾아 걷게 해주는 컴포넌트 NavMeshAgent를 찾아서 참조
+        _agent = GetComponent<NavMeshAgent>();
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
@@ -120,8 +125,8 @@ public class Zombie : MonoBehaviour, IDamageable
         direction.y = 0;
         direction.Normalize();
 
-        transform.forward = direction;
-        _controller.SimpleMove(_moveSpeed * direction);
+        // transform.forward = direction;
+        // _controller.SimpleMove(_moveSpeed * direction);
 
         float distance = Vector3.Distance(transform.position, _player.transform.position);
         if (distance < _detectDistance)
@@ -136,21 +141,23 @@ public class Zombie : MonoBehaviour, IDamageable
     {
         _roamTimer += Time.deltaTime;
 
-        Vector3 direction = _roamTarget - transform.position;
-        direction.y = 0;
+        // Vector3 direction = _roamTarget - transform.position;
+        // direction.y = 0;
 
         // 도착했거나 너무 오래 걸리면(벽에 막힘 등) 잠깐 쉰다.
-        if (direction.magnitude < 0.5f || _roamTimer >= _roamTimeout)
+        bool isArrived = !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance;
+        if (isArrived || _roamTimer >= _roamTimeout)
         {
+            _agent.ResetPath();
             _waitTimer = UnityEngine.Random.Range(_roamWaitRange.x, _roamWaitRange.y);
             GameLogger.Log($"{_state} -> Idle");
             _state = ZombieState.Idle;
             return;
         }
 
-        direction.Normalize();
-        transform.forward = direction;
-        _controller.SimpleMove(_roamSpeed * direction);
+        // direction.Normalize();
+        // transform.forward = direction;
+        // _controller.SimpleMove(_roamSpeed * direction);
 
         CheckDetectPlayer();
     }
@@ -158,9 +165,20 @@ public class Zombie : MonoBehaviour, IDamageable
     private void StartRoam()
     {
         Vector2 offset = UnityEngine.Random.insideUnitCircle * _roamRadius;
-        _roamTarget = _startPosition + new Vector3(offset.x, 0f, offset.y);
+        Vector3 candidate = _startPosition + new Vector3(offset.x, 0f, offset.y);
+        if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        {
+            _waitTimer = UnityEngine.Random.Range(_roamWaitRange.x, _roamWaitRange.y);
+            _state = ZombieState.Idle;
+            return;
+        }
+
+        _roamTarget = hit.position;
         _roamTimer = 0f;
         _state = ZombieState.Roam;
+
+        _agent.speed = _roamSpeed;
+        _agent.SetDestination(_roamTarget);
     }
 
     // 플레이어가 감지 거리 안에 있으면 Trace 상태로 전이한다.
@@ -170,6 +188,7 @@ public class Zombie : MonoBehaviour, IDamageable
         if (distance < _detectDistance)
         {
             GameLogger.Log($"{_state} -> Trace");
+            _agent.speed = _moveSpeed;
             _state = ZombieState.Trace;
         }
     }
@@ -205,20 +224,29 @@ public class Zombie : MonoBehaviour, IDamageable
 
     private IEnumerator Hit_Coroutine()
     {
+        StopAgent();
         yield return new WaitForSeconds(0.3f);
         GameLogger.Log($"{_state} -> Trace");
         _state = ZombieState.Trace;
     }
 
+    private void StopAgent()
+    {
+        _agent.ResetPath(); // 에이전트의 목적지 삭제
+        _agent.velocity = Vector3.zero; // 미끄럼 방지를 위해 가속도 제로
+    }
+
     private IEnumerator Death_Coroutine()
     {
-        _controller.enabled = false;
+        StopAgent();
+        _agent.enabled = false;
         yield return new WaitForSeconds(0.5f);
         Destroy(gameObject);
     }
 
     private void Idle()
     {
+        StopAgent();
         // TODO: Idle 애니메이션 실행
         // 대기: 제자리에서 플레이어를 기다린다.
         // 플레이어와 가까워지면 Trace 상태로 전이한다.
@@ -263,18 +291,22 @@ public class Zombie : MonoBehaviour, IDamageable
             return;
         }
 
-        Vector3 direction = _player.transform.position - transform.position;
-        direction.y = 0;
-        direction.Normalize();
+        // Vector3 direction = _player.transform.position - transform.position;
+        // direction.y = 0;
+        // direction.Normalize();
 
-        transform.forward = direction;
-        _controller.SimpleMove(_moveSpeed * direction);
+        // transform.forward = direction;
+        // _controller.SimpleMove(_moveSpeed * direction);
+
+        _agent.SetDestination(_player.transform.position);
     }
 
     private void Comeback()
     {
         // 처음 자리에 도달하면 다시 배회한다.
-        if (Vector3.Distance(transform.position, _startPosition) < 1f)
+        // if (Vector3.Distance(transform.position, _startPosition) < _agent.stoppingDistance)
+        // if (_agent.remainingDistance <= _agent.stoppingDistance)
+        if (_agent.pathStatus == NavMeshPathStatus.PathComplete)
         {
             GameLogger.Log($"{_state} -> Roam");
             StartRoam();
@@ -282,16 +314,18 @@ public class Zombie : MonoBehaviour, IDamageable
         }
 
         // 처음 자리로 되돌아감
-        Vector3 direction = _startPosition - transform.position;
-        direction.y = 0;
-        direction.Normalize();
-        transform.forward = direction;
-        _controller.SimpleMove(_moveSpeed * direction);
+        // Vector3 direction = _startPosition - transform.position;
+        // direction.y = 0;
+        // direction.Normalize();
+        // transform.forward = direction;
+        // _controller.SimpleMove(_moveSpeed * direction);
+        _agent.SetDestination(_startPosition);
     }
 
     // 공격: 일정 시간마다 플레이어를 때린다.
     private void Attack()
     {
+        StopAgent();
         // 플레이어가 공격 사정 거리 밖으로 나가면 Trace
         float distance = Vector3.Distance(transform.position, _player.transform.position);
         if (distance > _attackRange)
