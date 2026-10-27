@@ -9,6 +9,20 @@ public class Bomb : MonoBehaviour
     [SerializeField] private float _bombEffectReturnDelay = 3f;
 
     private bool _hasExploded;
+    private Rigidbody _rigidbody;
+
+    private void Awake()
+    {
+        _rigidbody = GetComponent<Rigidbody>();
+    }
+
+    // Lean Pool에서 꺼내질 때마다 이전 사용의 상태를 지운다.
+    private void OnEnable()
+    {
+        _hasExploded = false;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -30,7 +44,7 @@ public class Bomb : MonoBehaviour
 
         ApplyAreaDamage();
 
-        Destroy(gameObject);
+        LeanPool.Despawn(gameObject);
     }
 
     private void ApplyAreaDamage()

@@ -1,4 +1,5 @@
 using System;
+using Lean.Pool;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -38,7 +39,9 @@ public class MonsterSpawner : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle * _spawnRadius;
         Vector3 position = spawnPoint.position + new Vector3(offset.x, 0f, offset.y);
 
-        Zombie newMonster = Instantiate(_zombiePrefabs, position, Quaternion.identity);
+        Zombie newMonster = LeanPool.Spawn(_zombiePrefabs, position, Quaternion.identity);
+        // 풀에서 재사용되는 좀비는 이전 구독이 남아 있으므로 빼고 다시 구독해 중복을 막는다.
+        newMonster.OnDeath -= OnMonsterDeath;
         newMonster.OnDeath += OnMonsterDeath;
         _aliveCount++;
         OnAliveCountChanged?.Invoke();

@@ -117,6 +117,7 @@ MonoBehaviour:
   _moveSpeed: 5
   _maxHealth: 30
   _attackDamage: 10
+  _deathDestroyDelay: 1.5
   _moveDestination: {x: 10, y: 0, z: 0}
   _roamRadius: 8
   _roamSpeed: 2
@@ -661,6 +662,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: f2571b7c213b0a949a0024209ee5c9c7, type: 2}
+    - target: {fileID: -6057140222963153312, guid: 8f7380da49034cd488ddff94b1ac35d1, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 8f7380da49034cd488ddff94b1ac35d1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

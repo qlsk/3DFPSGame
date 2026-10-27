@@ -1,3 +1,4 @@
+using Lean.Pool;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,7 +52,7 @@ public class PlayerBombFire : MonoBehaviour
     {
         _currentThrowCount++;
         // 2. 발사 위치에서 수류탄 생성하기
-        Bomb bomb = Instantiate(_bombPrefab, _firePoint.position, Quaternion.identity);
+        Bomb bomb = LeanPool.Spawn(_bombPrefab, _firePoint.position, Quaternion.identity);
 
         // 3. 생성된 수류탄을 시선 방향으로 던지기
         Rigidbody rigidbody = bomb.GetComponent<Rigidbody>();

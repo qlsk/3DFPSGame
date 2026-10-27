@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using Lean.Pool;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -77,23 +79,47 @@ public class Zombie : MonoBehaviour, IDamageable
     private Animator _animator;
     private ZombieState _animatedState = ZombieState.Idle; // 마지막으로 애니메이션을 맞춘 상태
     private ZombieAnimation _currentAnimation = ZombieAnimation.Idle; // 지금 재생 중인 애니메이션 (Animator 기본 상태가 Idle)
+    private readonly List<GameObject> _bloodSprays = new List<GameObject>(); // 몸에 붙인 피 이펙트 (풀로 돌아가기 전에 지운다)
 
     private void Awake()
     {
         _currentHealth = _maxHealth;
-    }
-
-    private void Start()
-    {
         _player = GameObject.FindGameObjectWithTag("Player");
         // _controller = GetComponent<CharacterController>();
         // 길을 찾아 걷게 해주는 컴포넌트 NavMeshAgent를 찾아서 참조
         _agent = GetComponent<NavMeshAgent>();
+        _animator = GetComponentInChildren<Animator>();
+    }
+
+    // Lean Pool에서 꺼내질 때마다(처음 생성 포함) 이전 사용의 상태를 처음으로 되돌린다.
+    private void OnEnable()
+    {
+        // 1. 체력과 타이머를 초기화한다.
+        _currentHealth = _maxHealth;
+        _attackTimer = 0f;
+        _roamTimer = 0f;
+
+        // 2. 죽을 때 꺼둔 에이전트를 다시 켠다. (켜지는 위치 기준으로 NavMesh에 자리잡는다)
+        _agent.enabled = true;
+
+        // 3. 지금 위치를 새 처음 자리로 삼는다.
         _startPosition = transform.position;
         _endPosition = _startPosition + _moveDestination;
         _targetPosition = _endPosition;
-        _animator = GetComponentInChildren<Animator>();
-        StartRoam();
+
+        // 4. 애니메이션을 Idle로 되돌리고 남은 트리거를 지운다.
+        _animator.Rebind();
+        _animator.Update(0f);
+        _animatedState = ZombieState.Idle;
+        _currentAnimation = ZombieAnimation.Idle;
+
+        // 5. Idle에서 시작하면 Update에서 대기 시간이 0이라 바로 배회를 시작한다.
+        // (에이전트가 NavMesh에 자리잡기 전에 SetDestination을 부르지 않기 위해 StartRoam을 바로 호출하지 않는다)
+        _waitTimer = 0f;
+        _state = ZombieState.Idle;
+
+        // 6. 체력바 등이 최대 체력으로 다시 갱신되게 한다.
+        OnDamaged?.Invoke();
     }
 
     private void Update()
@@ -264,6 +290,7 @@ public class Zombie : MonoBehaviour, IDamageable
         {
             // 좀비의 자식으로 블러드 스프레이를 생성 -> 위치 수정
             GameObject bloodSpray = Instantiate(_bloodEffectPrefab, gameObject.transform);
+            _bloodSprays.Add(bloodSpray);
             // bloodSpray.transform.SetParent(transform);
             bloodSpray.transform.position = damageInfo.HitPoint;
             bloodSpray.transform.forward = damageInfo.HitNormal;
@@ -306,7 +333,15 @@ public class Zombie : MonoBehaviour, IDamageable
         StopAgent();
         _agent.enabled = false;
         yield return new WaitForSeconds(_deathDestroyDelay);
-        Destroy(gameObject);
+
+        // 풀로 돌려보내기 전에 몸에 붙은 피 이펙트를 지운다.
+        foreach (GameObject bloodSpray in _bloodSprays)
+        {
+            Destroy(bloodSpray);
+        }
+
+        _bloodSprays.Clear();
+        LeanPool.Despawn(gameObject);
     }
 
     private void Idle()
