@@ -42,6 +42,7 @@ public class Zombie : MonoBehaviour, IDamageable
     [SerializeField] private float _moveSpeed = 5f; // 이동속도
     [SerializeField] private float _maxHealth = 30f; // 최대 체력
     [SerializeField] private float _attackDamage = 10f; // 대미지
+    [SerializeField] private float _deathDestroyDelay = 1.5f; // 죽은 뒤 사라지기까지 시간 (쓰러지는 애니메이션보다 길어야 한다)
     public float MaxHealth => _maxHealth;
     [SerializeField] private Vector3 _moveDestination = new Vector3(10, 0, 0);
 
@@ -271,6 +272,10 @@ public class Zombie : MonoBehaviour, IDamageable
         {
             GameLogger.Log($"{_state} -> Death");
             _state = ZombieState.Death;
+
+            // 앞으로 쓰러질지 뒤로 쓰러질지 랜덤으로 고른다. (Any State에서 바로 전이되는 트리거)
+            _animator.SetTrigger(UnityEngine.Random.value < 0.5f ? "DieForward" : "DieBack");
+
             StartCoroutine(Death_Coroutine());
             OnDeath?.Invoke();
         }
@@ -296,7 +301,7 @@ public class Zombie : MonoBehaviour, IDamageable
     {
         StopAgent();
         _agent.enabled = false;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(_deathDestroyDelay);
         Destroy(gameObject);
     }
 
