@@ -51,13 +51,16 @@ public class PlayerGunFire : MonoBehaviour
         // 0. 발사 타이머를 지난 시간만큼 줄인다.
         _fireTimer -= Time.deltaTime;
         // 1. 마우스 왼쪽 버튼 입력 받기
-        if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
+        // 사격 애니메이션은 발사 프레임이 아니라 버튼을 누르고 있는 동안 유지한다. (발사 간격마다 Fire가 꺼지면 상체가 흔들림)
+        bool isFiring = Input.GetButton("Fire1") && _bulletCount > 0;
+        _animator.SetBool("Fire", isFiring);
+
+        if (isFiring && _fireTimer <= 0)
         {
             _bulletCount--;
 
             _fireTimer = _fireInterval;
             Shoot();
-            _animator.SetBool("Fire", true);
             if (_reloadCoroutine != null)
             {
                 StopCoroutine(_reloadCoroutine);
@@ -67,10 +70,6 @@ public class PlayerGunFire : MonoBehaviour
             }
             // 이 방식은 이 MonoBehaviour가 등록한 모든 Coroutine을 등록 취소한다
             // StopAllCoroutines();
-        }
-        else
-        {
-            _animator.SetBool("Fire", false);
         }
 
         // 2. R키 누르면 총알 재장전
