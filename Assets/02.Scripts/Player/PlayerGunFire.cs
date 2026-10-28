@@ -53,15 +53,11 @@ public class PlayerGunFire : MonoBehaviour
         // 1. 마우스 왼쪽 버튼 입력 받기
         if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
         {
-            if (_animator.GetFloat("MoveMotion") == 0)
-            {
-                _animator.SetTrigger("Attack");
-            }
-
             _bulletCount--;
 
             _fireTimer = _fireInterval;
             Shoot();
+            _animator.SetBool("Fire", true);
             if (_reloadCoroutine != null)
             {
                 StopCoroutine(_reloadCoroutine);
@@ -71,6 +67,10 @@ public class PlayerGunFire : MonoBehaviour
             }
             // 이 방식은 이 MonoBehaviour가 등록한 모든 Coroutine을 등록 취소한다
             // StopAllCoroutines();
+        }
+        else
+        {
+            _animator.SetBool("Fire", false);
         }
 
         // 2. R키 누르면 총알 재장전
