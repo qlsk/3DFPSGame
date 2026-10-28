@@ -1204,6 +1204,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI_Minimap
   _minimapCamera: {fileID: 1499336347}
+--- !u!1 &426285330 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100060, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
+  m_PrefabInstance: {fileID: 491097333}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &474376452
 GameObject:
   m_ObjectHideFlags: 0
@@ -1296,25 +1301,33 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 4e3b585674e140646ab1cd7036b4819a, type: 2}
     - target: {fileID: 9500000, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
       propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tTransform 'Bip001 L Hand'\n\tTransform 'Bip001 R Foot'\n\tTransform
-        'Bip001 R Finger0'\n\tTransform 'Bip001 R Toe0'\n\tTransform 'Bip001 Head'\n\tTransform
-        'Bip001 Spine1'\n\tTransform 'Bip001 R UpperArm'\n\tTransform 'Bip001 R Calf'\n\tTransform
-        'Bip001 L UpperArm'\n\tTransform 'Bip001 L Forearm'\n\tand more ...\n\tFrom
-        animation clip 'demo_combat_idle'\n\tFrom animation clip 'demo_combat_run'\n\tFrom
-        animation clip 'demo_combat_shoot'"
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100060, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 491097336}
   m_SourcePrefab: {fileID: 100100000, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
 --- !u!4 &491097334 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400060, guid: fcb334eb247ae3e488abb081c847cf09, type: 3}
   m_PrefabInstance: {fileID: 491097333}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &491097336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426285330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8270a84c4e7c879438f6daaf3aeacabf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
 --- !u!1 &502061770
 GameObject:
   m_ObjectHideFlags: 0
