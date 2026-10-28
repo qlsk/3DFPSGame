@@ -25,6 +25,8 @@ public class PlayerGunFire : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Image _reloadProgressFill;
 
+    private Animator _animator;
+
     private float _fireTimer = 0;
     private int _bulletCount = 0;
     public int BulletCount => _bulletCount;
@@ -36,6 +38,7 @@ public class PlayerGunFire : MonoBehaviour
     {
         _bulletCount = _maxBulletCount;
         _reloadProgressFill.fillAmount = 0f;
+        _animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -50,6 +53,11 @@ public class PlayerGunFire : MonoBehaviour
         // 1. 마우스 왼쪽 버튼 입력 받기
         if (Input.GetButton("Fire1") && _fireTimer <= 0 && _bulletCount > 0)
         {
+            if (_animator.GetFloat("MoveMotion") == 0)
+            {
+                _animator.SetTrigger("Attack");
+            }
+
             _bulletCount--;
 
             _fireTimer = _fireInterval;

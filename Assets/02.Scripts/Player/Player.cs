@@ -25,6 +25,7 @@ public class Player : MonoBehaviour, IDamageable
 
         if (_currentHealth <= 0f)
         {
+            gameObject.GetComponentInChildren<Animator>().SetFloat("MoveMotion", 0f);
             GameLogger.Log("플레이어가 쓰러졌다");
             GameManager.Instance.GameOver();
         }

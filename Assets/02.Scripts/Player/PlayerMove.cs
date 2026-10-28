@@ -27,6 +27,7 @@ public class PlayerMove : MonoBehaviour
 
     [Header("컴포넌트")]
     [SerializeField] private CharacterController _characterController;
+    private Animator _animator;
 
     public event Action OnStaminaChange;
 
@@ -34,6 +35,11 @@ public class PlayerMove : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
         _stamina = DefaultMaxStamina;
+    }
+
+    private void Start()
+    {
+        _animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -59,6 +65,8 @@ public class PlayerMove : MonoBehaviour
         direction = transform.TransformDirection(direction);
         // 로컬 좌표계: 한 대상을 중심
         // 월드 좌표계: 세상을 중심
+
+        _animator.SetFloat("MoveMotion", direction.magnitude);
 
         // 3. 땅에 서 있으면 떨어지는 속도와 점프 횟수를 초기화한다.
         if (_characterController.isGrounded && _yVelocity < 0f)
