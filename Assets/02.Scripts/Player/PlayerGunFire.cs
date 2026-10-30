@@ -3,6 +3,7 @@ using System.Collections;
 using Lean.Pool;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 // 마우스 왼쪽 버튼을 누르면 바라보는 방향으로 총알을 발사하고 싶다.
 public class PlayerGunFire : MonoBehaviour
@@ -32,6 +33,8 @@ public class PlayerGunFire : MonoBehaviour
     public int BulletCount => _bulletCount;
     private Coroutine _reloadCoroutine = null;
 
+    [SerializeField] private GameObject[] _muzzleFlashes;
+    [SerializeField] private float _flashTime = 0.05f;
     public event Action<int, int> OnBulletCountChanged;
 
     private void Awake()
@@ -86,6 +89,7 @@ public class PlayerGunFire : MonoBehaviour
 
     private void Shoot()
     {
+        StartCoroutine(MuzzleFlash_Coroutine());
         OnBulletCountChanged?.Invoke(_bulletCount, _maxBulletCount);
 
         // 2. 레이(광선)을 생상하고 발사될 위치와 진행 방향 설정하기
@@ -145,5 +149,13 @@ public class PlayerGunFire : MonoBehaviour
         OnBulletCountChanged?.Invoke(_bulletCount, _maxBulletCount);
         _reloadProgressFill.fillAmount = 0f;
         _reloadCoroutine = null;
+    }
+
+    private IEnumerator MuzzleFlash_Coroutine()
+    {
+        GameObject flash = _muzzleFlashes[Random.Range(0, _muzzleFlashes.Length)];
+        flash.SetActive(true);
+        yield return new WaitForSeconds(_flashTime);
+        flash.SetActive(false);
     }
 }
