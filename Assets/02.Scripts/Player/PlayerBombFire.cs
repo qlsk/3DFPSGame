@@ -31,6 +31,13 @@ public class PlayerBombFire : MonoBehaviour
     private bool _isThrowing = false;
     private float _pendingThrowPower;
 
+    private Player _player;
+
+    private void Awake()
+    {
+        _player = GetComponent<Player>();
+    }
+
     private void Start()
     {
         _animator = GetComponentInChildren<Animator>();
@@ -39,6 +46,8 @@ public class PlayerBombFire : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance.State != GameState.Playing) return;
+
+        if (_player.WeaponMode != WeaponMode.Normal) return;
 
         bool isMouseVisible = Cursor.visible;
         if (isMouseVisible) return;

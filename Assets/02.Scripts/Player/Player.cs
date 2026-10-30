@@ -14,6 +14,24 @@ public class Player : MonoBehaviour, IDamageable
     private Animator _animator;
     private int _injuredIndex;
 
+    private WeaponMode _weaponMode = WeaponMode.Normal;
+    public WeaponMode WeaponMode => _weaponMode;
+
+    private void Update()
+    {
+        if (GameManager.Instance.State != GameState.Playing) return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _weaponMode = WeaponMode.Normal;
+        }
+
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _weaponMode = WeaponMode.Sniper;
+        }
+    }
+
     private void Start()
     {
         _animator = GetComponentInChildren<Animator>();
