@@ -17,18 +17,20 @@ public class Player : MonoBehaviour, IDamageable
     private WeaponMode _weaponMode = WeaponMode.Normal;
     public WeaponMode WeaponMode => _weaponMode;
 
+    public event Action<WeaponMode> OnWeaponModeChanged;
+
     private void Update()
     {
         if (GameManager.Instance.State != GameState.Playing) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            _weaponMode = WeaponMode.Normal;
+            ChangeWeaponMode(WeaponMode.Normal);
         }
 
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            _weaponMode = WeaponMode.Sniper;
+            ChangeWeaponMode(WeaponMode.Sniper);
         }
     }
 
@@ -37,6 +39,12 @@ public class Player : MonoBehaviour, IDamageable
         _animator = GetComponentInChildren<Animator>();
         _injuredIndex = _animator.GetLayerIndex("Injured Layer");
         _currentHealth = _maxHealth;
+    }
+
+    private void ChangeWeaponMode(WeaponMode weaponMode)
+    {
+        _weaponMode = weaponMode;
+        OnWeaponModeChanged?.Invoke(weaponMode);
     }
 
     public void TakeDamage(DamageInfo damageInfo)

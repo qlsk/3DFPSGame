@@ -5,8 +5,7 @@ using UnityEngine.UI;
 public class UI_PlayerStats : MonoBehaviour
 {
     private Player _player;
-    private PlayerGunFire _playerGunFire;
-    private PlayerBombFire _playerBombFire;
+
     private PlayerMove _playerMove;
 
     [SerializeField] private Slider _healthSlider;
@@ -15,10 +14,11 @@ public class UI_PlayerStats : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _throwCountText;
     [SerializeField] private Slider _throwPowerSlider;
 
+    private PlayerBombFire _playerBombFire;
+
     private void Awake()
     {
         _player = GetComponent<Player>();
-        _playerGunFire = GetComponent<PlayerGunFire>();
         _playerMove = GetComponent<PlayerMove>();
         _playerBombFire = GetComponent<PlayerBombFire>();
     }
@@ -29,9 +29,6 @@ public class UI_PlayerStats : MonoBehaviour
         _healthSlider.value = _player.CurrentHealth;
         _player.OnDamaged += RefreshHealth;
 
-        _bulletCountSlider.maxValue = _playerGunFire.MaxBulletCount;
-        _bulletCountSlider.value = _playerGunFire.BulletCount;
-        _playerGunFire.OnBulletCountChanged += RefreshBulletCount;
 
         _playerStaminaSlider.maxValue = _playerMove.MaxStamina;
         _playerStaminaSlider.minValue = _playerMove.SprintCost;
@@ -74,11 +71,6 @@ public class UI_PlayerStats : MonoBehaviour
         // 유튜브 구독 패턴은 유튜버가 영상을 올릴 때 이를 구독 중인 여러 구독자에게
         // C#에서는 이것을 Action으로 구현할 수 있다.
         _healthSlider.value = _player.CurrentHealth;
-    }
-
-    private void RefreshBulletCount()
-    {
-        _bulletCountSlider.value = _playerGunFire.BulletCount;
     }
 
     private void RefreshStamina()

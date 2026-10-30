@@ -8,7 +8,7 @@ public class PlayerZoom : MonoBehaviour
 
     [SerializeField] private GameObject _sniperZoom;
     private bool _isZooming = false;
-    [SerializeField] private float _zoomDelay = 1f;
+    [SerializeField] private float _zoomDelay = 0.1f;
     private float _zoomTimer = 0f;
     private Player _player;
 
@@ -22,10 +22,15 @@ public class PlayerZoom : MonoBehaviour
         _zoomTimer += Time.deltaTime;
         if (_zoomTimer < _zoomDelay) return;
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1) && _player.WeaponMode == WeaponMode.Sniper)
         {
             _isZooming = !_isZooming;
             _zoomTimer = 0f;
+        }
+
+        if (_player.WeaponMode != WeaponMode.Sniper)
+        {
+            _isZooming = false;
         }
 
         bool isZooming = GameManager.Instance.State == GameState.Playing

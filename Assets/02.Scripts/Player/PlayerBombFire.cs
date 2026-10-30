@@ -1,3 +1,4 @@
+using System;
 using Lean.Pool;
 using TMPro;
 using UnityEngine;
@@ -32,6 +33,8 @@ public class PlayerBombFire : MonoBehaviour
     private float _pendingThrowPower;
 
     private Player _player;
+
+    public event Action<int> OnBombCountChanged;
 
     private void Awake()
     {
@@ -82,6 +85,7 @@ public class PlayerBombFire : MonoBehaviour
 
         if (GameManager.Instance.State != GameState.Playing) return;
         Shoot(_pendingThrowPower);
+        OnBombCountChanged?.Invoke(_maxThrowCount - _currentThrowCount);
     }
 
     private void Shoot(float throwPower)
