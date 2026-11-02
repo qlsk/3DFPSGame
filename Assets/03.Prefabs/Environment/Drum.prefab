@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4295409813594136837}
   - component: {fileID: 1879201984053950528}
   - component: {fileID: 2962751954889817973}
+  - component: {fileID: 326332029609095831}
   m_Layer: 8
   m_Name: Drum
   m_TagString: Untagged
@@ -162,3 +163,19 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 8108563764783910780, guid: 36115e87cceea6848883fdd334bc7042, type: 3}
+--- !u!208 &326332029609095831
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1865622451179130175}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.33055764, y: 0.45, z: 0.33055764}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.45, z: 0}
+  m_TimeToStationary: 0.5
