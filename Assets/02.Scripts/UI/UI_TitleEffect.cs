@@ -1,9 +1,10 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 제목이 위에서 내려오며 나타나고, 이후 몇 초마다 짧게 흔들리며 붉게 번쩍인다.
-[RequireComponent(typeof(TMP_Text))]
+// 글자(TMP)와 이미지 모두 Graphic이라 어느 쪽에 붙여도 동작한다.
+[RequireComponent(typeof(Graphic))]
 public class UI_TitleEffect : MonoBehaviour
 {
     [Header("등장")]
@@ -26,7 +27,7 @@ public class UI_TitleEffect : MonoBehaviour
     // 로딩 끊김으로 한 프레임 시간이 튀어도 등장 연출이 건너뛰지 않도록 제한한다.
     private const float MaxFrameDelta = 1f / 30f;
 
-    private TMP_Text _text;
+    private Graphic _text;
     private RectTransform _rect;
     private Vector2 _basePosition;
     private Vector3 _baseScale;
@@ -34,7 +35,7 @@ public class UI_TitleEffect : MonoBehaviour
 
     private void Awake()
     {
-        _text = GetComponent<TMP_Text>();
+        _text = GetComponent<Graphic>();
         _rect = (RectTransform)transform;
         _basePosition = _rect.anchoredPosition;
         _baseScale = _rect.localScale;
