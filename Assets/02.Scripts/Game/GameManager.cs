@@ -18,6 +18,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
     [SerializeField] private TextMeshProUGUI _stateText;
     [SerializeField] private GameObject _optionPopup;
+    [SerializeField] private GameObject _gameOverPopup;
 
     private void Start()
     {
@@ -55,11 +56,13 @@ public class GameManager : SingletonBehaviour<GameManager>
 
     public void GameOver()
     {
+        // 1. 게임 오버 상태로 바꿔 입력과 AI를 멈춘다.
         _state = GameState.GameOver;
+        Time.timeScale = 0;
 
-        _stateText.gameObject.SetActive(true);
-        _stateText.text = "게임 오버";
-        _stateText.color = Color.red;
+        // 2. 팝업을 띄우고 버튼을 누를 수 있게 커서를 해제한다.
+        _gameOverPopup.SetActive(true);
+        CursorManager.Instance.UnlockCursor();
     }
 
     // 계속하기
