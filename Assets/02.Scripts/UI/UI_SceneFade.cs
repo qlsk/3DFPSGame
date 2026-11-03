@@ -29,8 +29,13 @@ public class UI_SceneFade : MonoBehaviour
 
     private IEnumerator FadeIn_Coroutine()
     {
-        // 1. 첫 프레임 로딩 끊김이 지나가도록 잠깐 기다린다.
-        yield return new WaitForSecondsRealtime(_startDelay);
+        // 1. 첫 프레임 로딩 끊김이 지나가도록 잠깐 기다린다. 끊긴 시간은 세지 않는다.
+        float waitTime = 0f;
+        while (waitTime < _startDelay)
+        {
+            waitTime += Mathf.Min(Time.unscaledDeltaTime, MaxFrameDelta);
+            yield return null;
+        }
 
         // 2. 검은 화면을 서서히 투명하게 만든다.
         float elapsedTime = 0f;
