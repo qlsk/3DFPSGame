@@ -27,12 +27,8 @@ public class UI_Login : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _messageText; // 안내 글자
     [SerializeField] private string _gameSceneName = "GameScene"; // 로그인하면 불러올 씬
 
-    // 아이디: 이메일 형식이거나, 영문·숫자·-·@·_로 이루어진 3~20 글자
-    private const string IdPattern = @"^(?:[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}|[A-Za-z0-9\-@_]{3,20})$";
-
-    // 비밀번호: 공백 없는 영문·숫자·기호 8~30 글자, 대문자·소문자·숫자·기호를 각각 하나 이상 포함
-    // (?=.*X)는 전방 탐색으로, 문자열 어딘가에 X가 있는지만 확인하고 위치는 옮기지 않는다.
-    private const string PasswordPattern = @"^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9])[\x21-\x7E]{8,30}$";
+    private AccountIdSpecification _idSpec = new AccountIdSpecification();
+    private AccountPasswordSpecification _passwordSpec = new AccountPasswordSpecification();
 
     private PlayerPrefsAccountRepository _repository = new PlayerPrefsAccountRepository();
 
@@ -108,16 +104,16 @@ public class UI_Login : MonoBehaviour
         }
 
         // 1. 아이디 규칙 검사
-        if (!Regex.IsMatch(id, IdPattern))
+        if (!_idSpec.IsSatisfiedBy(id))
         {
-            _messageText.text = "아이디는 이메일 또는 영문, 숫자, -, @, _ 3~20 글자로 입력해주세요.";
+            _messageText.text = _idSpec.ErrorMessage;
             return;
         }
 
         // 2. 비밀번호 규칙 검사
-        if (!Regex.IsMatch(password, PasswordPattern))
+        if (!_passwordSpec.IsSatisfiedBy(password))
         {
-            _messageText.text = "비밀번호는 대문자, 소문자, 숫자, 기호를 포함한 8~30 글자로 입력해주세요.";
+            _messageText.text = _passwordSpec.ErrorMessage;
             return;
         }
 
