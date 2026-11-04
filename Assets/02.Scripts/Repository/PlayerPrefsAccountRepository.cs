@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerPrefsAccountRepository
 {
     // 계정 데이터 보관소
-    private const string KeyPrefix = "Acount_";
+    private const string KeyPrefix = "Account_";
 
     private string GetKeyID(string id)
     {
