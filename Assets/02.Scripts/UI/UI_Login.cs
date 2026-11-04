@@ -1,0 +1,118 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class UI_Login : MonoBehaviour
+{
+    private enum Mode
+    {
+        Login,
+        Register,
+    }
+
+    [Header("입력 칸")]
+    [SerializeField] private TMP_InputField _idInput;
+    [SerializeField] private TMP_InputField _passwordInput;
+    [SerializeField] private TMP_InputField _passwordConfirmInput;
+
+    [Header("버튼")]
+    [SerializeField] private Button _loginButton; // 로그인 모드: 로그인
+    [SerializeField] private Button _gotoRegisterButton; // 로그인 모드: 회원가입 모드로
+    [SerializeField] private Button _registerButton; // 회원가입 모드: 가입하기
+    [SerializeField] private Button _gotoLoginButton; // 회원가입 모드: 로그인 모드로
+
+    [Header("기타")]
+    [SerializeField] private TextMeshProUGUI _messageText; // 안내 글자
+    [SerializeField] private string _gameSceneName = "GameScene"; // 로그인하면 불러올 씬
+
+    private PlayerPrefsAccountRepository _repository = new PlayerPrefsAccountRepository();
+
+    private Mode _mode = Mode.Login;
+
+    private void Start()
+    {
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        bool isLoginMode = _mode == Mode.Login;
+        _passwordConfirmInput.gameObject.SetActive(!isLoginMode);
+
+        _loginButton.gameObject.SetActive(isLoginMode);
+        _gotoRegisterButton.gameObject.SetActive(isLoginMode);
+
+        _registerButton.gameObject.SetActive(!isLoginMode);
+        _gotoLoginButton.gameObject.SetActive(!isLoginMode);
+    }
+
+    public void GotoLogin()
+    {
+        _mode = Mode.Login;
+        Refresh();
+    }
+
+    public void GotoRegister()
+    {
+        _mode = Mode.Register;
+        Refresh();
+    }
+
+    public void Login()
+    {
+        string id = _idInput.text;
+        string password = _passwordInput.text;
+
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(password))
+        {
+            _messageText.text = "아이디와 비밀번호를 입력해주세요.";
+            return;
+        }
+
+        if (_repository.CheckPassword(id, password))
+        {
+            SceneManager.LoadScene(_gameSceneName);
+        }
+        else
+        {
+            _messageText.text = "아이디와 비밀번호를 확인해주세요.";
+            return;
+        }
+    }
+
+    public void Register()
+    {
+        string id = _idInput.text;
+        string password = _passwordInput.text;
+        string passwordConfirm = _passwordConfirmInput.text;
+
+        // TODO: ID와 비밀번호 규칙
+        // ID는 이메일 양식
+        // 비밀번호는 영어만 되며 특수문자 대문자 하나 이상을 포함한 7~15글자
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(password))
+        {
+            _messageText.text = "아이디와 비밀번호를 입력해주세요.";
+            return;
+        }
+
+        if (password != passwordConfirm)
+        {
+            _messageText.text = "비밀번호가 일치하지 않습니다.";
+            return;
+        }
+
+        // TODO: 중복 ID 검사
+        // TODO: 실제 회원가입 데이터 저장
+
+        if (_repository.Exists(id))
+        {
+            _messageText.text = "이미 존재하는 아이디입니다.";
+            return;
+        }
+
+        _repository.Register(id, password);
+        GotoLogin();
+        _messageText.text = "가입이 완료되었습니다. 로그인 해주세요.";
+    }
+}
